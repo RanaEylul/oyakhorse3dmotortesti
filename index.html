@@ -209,12 +209,12 @@
         <button id="bitir-btn">Sınavı Bitir 🏁</button>
     </div>
 
-    <!-- GİZLİ YÖNETİCİ PANELİ (EXCEL LİSTESİ VE MODEL YÜKLEME) -->
+    <!-- YÖNETİCİ PANELİ (EXCEL LİSTESİ) -->
     <div id="panel">
         <h3>📊 Kayıtlı Sınav Sonuçları (Excel)</h3>
         <p style="font-size:11px; color:#64748b; margin-top:-6px;">Yönetici paneli - Katılımcı skor tablosu:</p>
         
-        <div style="max-height: 180px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
             <table class="results-table">
                 <thead>
                     <tr>
@@ -238,12 +238,8 @@
         <button class="qr-btn" id="qr-generate-btn">
             📱 Sınav Linki Karekodu Oluştur
         </button>
-
-        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 16px 0;">
-
-        <h3>📂 Model Yönetimi</h3>
-        <input type="file" id="fileInput" accept=".glb,.gltf" style="font-size: 11px;">
-        <small id="status" style="color: #0284c7; font-size: 11px; display: block; margin-top: 6px;">Hazır demo motor modeli yüklendi.</small>
+        
+        <small id="status" style="color: #0284c7; font-size: 11px; display: block; margin-top: 10px; text-align: center;">Model yükleniyor...</small>
     </div>
 
     <!-- KAREKOD POPUP MODAL -->
@@ -273,7 +269,7 @@
         let aktifKullanici = null;
         let testKayıtlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
 
-        // 10 ADET HATALI BÖLGE (DEMO MOTOR KOORDİNATLARI UYUMLU)
+        // 10 ADET HATALI BÖLGE (MOTOR KOORDİNATLARI)
         const hataliBolgeler = [
             { x: -0.4, y: 0.2, z: 0.0, tolerans: 0.2, bulunan: false },
             { x:  0.4, y: 0.2, z: 0.0, tolerans: 0.2, bulunan: false },
@@ -344,7 +340,7 @@
 
         // KAREKOD OLUŞTURMA VE GÖSTERME
         document.getElementById('qr-generate-btn').addEventListener('click', () => {
-            const currentUrl = window.location.href;
+            const currentUrl = "https://oyakhorse3dmotortesti.netlify.app/";
             const qrContainer = document.getElementById('qrcode-container');
             qrContainer.innerHTML = '';
 
@@ -365,7 +361,7 @@
             document.getElementById('qr-modal').style.display = 'none';
         });
 
-        // KAREKOD RESMİNİ İNDİRME İŞLEVİ (Geliştirilmiş & Güvenli)
+        // KAREKOD RESMİNİ İNDİRME İŞLEVİ
         document.getElementById('qr-download-btn').addEventListener('click', () => {
             const qrImg = document.querySelector('#qrcode-container img');
             const qrCanvas = document.querySelector('#qrcode-container canvas');
@@ -440,7 +436,7 @@
         });
 
         // =========================================================
-        // THREE.JS SAHNE VE PROSEDÜREL DEMO MOTOR MODELİ
+        // THREE.JS SAHNE VE DOĞRUDAN .GLB MODEL YÜKLEME
         // =========================================================
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xf1f5f9);
@@ -461,17 +457,6 @@
 
         let loadedModel = new THREE.Group();
         scene.add(loadedModel);
-
-        const blockGeo = new THREE.BoxGeometry(1.2, 0.8, 1.0);
-        const blockMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.3 });
-        const motorBlock = new THREE.Mesh(blockGeo, blockMat);
-        loadedModel.add(motorBlock);
-
-        const cylGeo = new THREE.CylinderGeometry(0.35, 0.35, 1.1, 32);
-        const cylMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.5 });
-        const cylinder = new THREE.Mesh(cylGeo, cylMat);
-        cylinder.position.set(0, 0.45, 0);
-        loadedModel.add(cylinder);
 
         const loader = new THREE.GLTFLoader();
 
@@ -495,43 +480,15 @@
                 controls.target.set(0, 0, 0);
                 controls.update();
 
-                document.getElementById('status').innerText = "✅ Özel model yüklendi!";
-            }, undefined, () => {
+                document.getElementById('status').innerText = "✅ Model başarıyla yüklendi!";
+            }, undefined, (error) => {
+                console.error(error);
                 document.getElementById('status').innerText = "❌ Model yükleme hatası!";
             });
         }
 
-        async function hafizadanYukle() {
-            try {
-                const db = await openDB();
-                const tx = db.transaction('models', 'readonly');
-                const store = tx.objectStore('models');
-                const request = store.get('savedGlb');
-                request.onsuccess = (e) => {
-                    if (e.target.result) modelYukle(URL.createObjectURL(e.target.result));
-                };
-            } catch (e) {}
-        }
-
-        function openDB() {
-            return new Promise((resolve, reject) => {
-                const req = indexedDB.open('EngineAppDB', 1);
-                req.onupgradeneeded = (e) => e.target.result.createObjectStore('models');
-                req.onsuccess = (e) => resolve(e.target.result);
-                req.onerror = (e) => reject(e.target.error);
-            });
-        }
-
-        document.getElementById('fileInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const db = await openDB();
-            const tx = db.transaction('models', 'readwrite');
-            tx.objectStore('models').put(file, 'savedGlb');
-            modelYukle(URL.createObjectURL(file));
-        });
-
-        hafizadanYukle();
+        // Netlify sunucusundaki motor.glb dosyasını doğrudan çağırıyoruz
+        modelYukle('motor.glb');
         tabloyuCiz();
 
         // TIKLAMA VE KOORDİNAT KONTROLÜ
