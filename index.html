@@ -220,7 +220,7 @@
         <div class="hero-card">
             <span class="badge">Kalite Kontrol Sınav Portalı</span>
             <h1>3D Motor Muayene Sınavı</h1>
-            <p>Sınava başlamak için bilgilerinizi doldurun. Her personel sadece 1 defa sınava girebilir.</p>
+            <p>Sınava başlamak için bilgilerinizi doldurun. Her personel sadece 1 defa sınava girebilir. (Baraj: 70 Puan)</p>
             
             <form id="kayit-form">
                 <div class="form-group">
@@ -253,7 +253,7 @@
 
     <!-- ALT BİLGİ & SINAVI BİTİR BUTONU -->
     <div id="bottom-status-bar">
-        <span>Arıza Tespiti: <b id="progress-text" style="color:#0284c7">0 / 9</b></span>
+        <span>Arıza Tespiti: <b id="progress-text" style="color:#0284c7">0 / 10</b></span>
         <button id="bitir-btn">Sınavı Bitir 🏁</button>
     </div>
 
@@ -294,7 +294,7 @@
         </div>
     </div>
 
-    <div id="bildirim">⚠️ Arıza Bulundu! (+11.1 Puan)</div>
+    <div id="bildirim">⚠️ Arıza Bulundu! (+10 Puan)</div>
 
     <script>
         let aktifKullanici = null;
@@ -308,17 +308,18 @@
             alert("⚠️ motor11-v1.glb dosyası bulunamadı!");
         });
 
-        // 9 ADET ARIZA KOORDİNATI (Tolerans: 0.75)
+        // TAM 10 ADET ÖZEL ARIZA KOORDİNATI (Tolerans: 0.75, Her Biri: 10 Puan)
         const hataliBolgeler = [
-            { id: 1, x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 0.75, bulunan: false },
-            { id: 2, x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 0.75, bulunan: false },
-            { id: 3, x:  0.3152, y:  0.1784, z: -0.0339, tolerans: 0.75, bulunan: false },
-            { id: 4, x:  0.3132, y:  0.2436, z:  0.0635, tolerans: 0.75, bulunan: false },
-            { id: 5, x: -0.2782, y:  0.8708, z:  0.0973, tolerans: 0.75, bulunan: false },
-            { id: 6, x: -0.3745, y:  0.8048, z: -0.0888, tolerans: 0.75, bulunan: false },
-            { id: 7, x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.75, bulunan: false },
-            { id: 8, x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.75, bulunan: false },
-            { id: 9, x: -0.3746, y:  0.8009, z: -0.0924, tolerans: 0.75, bulunan: false }
+            { id: 1,  x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 0.75, bulunan: false },
+            { id: 2,  x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 0.75, bulunan: false },
+            { id: 3,  x:  0.3152, y:  0.1784, z: -0.0339, tolerans: 0.75, bulunan: false },
+            { id: 4,  x:  0.3132, y:  0.2436, z:  0.0635, tolerans: 0.75, bulunan: false },
+            { id: 5,  x: -0.2782, y:  0.8708, z:  0.0973, tolerans: 0.75, bulunan: false },
+            { id: 6,  x: -0.3745, y:  0.8048, z: -0.0888, tolerans: 0.75, bulunan: false },
+            { id: 7,  x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.75, bulunan: false },
+            { id: 8,  x: -0.3746, y:  0.8009, z: -0.0924, tolerans: 0.75, bulunan: false },
+            { id: 9,  x:  0.3146, y:  0.1790, z: -0.0449, tolerans: 0.75, bulunan: false },
+            { id: 10, x:  0.3150, y:  0.1789, z: -0.0357, tolerans: 0.75, bulunan: false }
         ];
 
         // Form Gönderim & Sınavı Başlatma
@@ -387,7 +388,7 @@
                         if (!hata.bulunan) {
                             hata.bulunan = true;
                             const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-                            document.getElementById('progress-text').innerText = `${bulunanSayisi} / 9`;
+                            document.getElementById('progress-text').innerText = `${bulunanSayisi} / 10`;
 
                             const bildirim = document.getElementById('bildirim');
                             bildirim.style.display = 'block';
@@ -418,8 +419,8 @@
             }
 
             const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-            aktifKullanici.puan = Math.round(bulunanSayisi * 11.11); 
-            aktifKullanici.durum = aktifKullanici.puan >= 70 ? 'BAŞARILI' : 'BAŞARISIZ';
+            aktifKullanici.puan = bulunanSayisi * 10; // Her arıza 10 Puan
+            aktifKullanici.durum = aktifKullanici.puan >= 70 ? 'BAŞARILI' : 'BAŞARISIZ'; // Baraj: 70 Puan
 
             testKayıtlari.push(aktifKullanici);
             localStorage.setItem('engine_test_results', JSON.stringify(testKayıtlari));
