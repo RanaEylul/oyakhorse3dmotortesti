@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Motor Kalite Kontrol & Sınav Portalı</title>
-    <!-- Google Model Viewer (En Stabil CDN Bağlantısı) -->
+    <!-- Google Model Viewer Altyapısı -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@latest/dist/model-viewer.min.js"></script>
     <!-- Karekod Kütüphanesi -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -253,7 +253,7 @@
 
     <!-- ALT BİLGİ & SINAVI BİTİR BUTONU -->
     <div id="bottom-status-bar">
-        <span>Arıza Tespiti: <b id="progress-text" style="color:#0284c7">0 / 8</b></span>
+        <span>Arıza Tespiti: <b id="progress-text" style="color:#0284c7">0 / 9</b></span>
         <button id="bitir-btn">Sınavı Bitir 🏁</button>
     </div>
 
@@ -294,7 +294,7 @@
         </div>
     </div>
 
-    <div id="bildirim">⚠️ Arıza Bulundu! (+12.5 Puan)</div>
+    <div id="bildirim">⚠️ Arıza Bulundu! (+11.1 Puan)</div>
 
     <script>
         let aktifKullanici = null;
@@ -303,13 +303,12 @@
 
         const viewer = document.getElementById('engine-viewer');
 
-        // MODEL YÜKLEME HATA UYARISI
         viewer.addEventListener('error', (event) => {
             console.error("Model yükleme hatası:", event);
-            alert("⚠️ motor11-v1.glb dosyası bulunamadı!\nLütfen dosyanın index.html ile aynı klasörde olduğunu ve tarayıcıda Live Server ile açtığınızı kontrol edin.");
+            alert("⚠️ motor11-v1.glb dosyası bulunamadı!");
         });
 
-        // 8 ARIZA KOORDİNATI (Genişletilmiş 0.75 tolerans ile)
+        // 9 ADET ARIZA KOORDİNATI (Tolerans: 0.75)
         const hataliBolgeler = [
             { id: 1, x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 0.75, bulunan: false },
             { id: 2, x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 0.75, bulunan: false },
@@ -318,7 +317,8 @@
             { id: 5, x: -0.2782, y:  0.8708, z:  0.0973, tolerans: 0.75, bulunan: false },
             { id: 6, x: -0.3745, y:  0.8048, z: -0.0888, tolerans: 0.75, bulunan: false },
             { id: 7, x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.75, bulunan: false },
-            { id: 8, x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.75, bulunan: false }
+            { id: 8, x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.75, bulunan: false },
+            { id: 9, x: -0.3746, y:  0.8009, z: -0.0924, tolerans: 0.75, bulunan: false }
         ];
 
         // Form Gönderim & Sınavı Başlatma
@@ -387,7 +387,7 @@
                         if (!hata.bulunan) {
                             hata.bulunan = true;
                             const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-                            document.getElementById('progress-text').innerText = `${bulunanSayisi} / 8`;
+                            document.getElementById('progress-text').innerText = `${bulunanSayisi} / 9`;
 
                             const bildirim = document.getElementById('bildirim');
                             bildirim.style.display = 'block';
@@ -418,7 +418,7 @@
             }
 
             const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-            aktifKullanici.puan = bulunanSayisi * 12.5; 
+            aktifKullanici.puan = Math.round(bulunanSayisi * 11.11); 
             aktifKullanici.durum = aktifKullanici.puan >= 70 ? 'BAŞARILI' : 'BAŞARISIZ';
 
             testKayıtlari.push(aktifKullanici);
