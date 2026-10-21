@@ -1,100 +1,26 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Direkt 3D Motor Görüntüleyici</title>
+    <title>3D Motor Görüntüleyici</title>
+    <!-- Google Model Viewer Standart Kütüphanesi -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #f1f5f9; }
-        #canvas-container { width: 100vw; height: 100vh; display: block; }
+        body, html { margin: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f1f5f9; }
+        model-viewer { width: 100vw; height: 100vh; }
     </style>
-    <!-- Three.js ve Loader Kütüphaneleri -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
 
-    <div id="canvas-container"></div>
+    <!-- Doğrudan siteye giren herkesin ekranında açılacak model -->
+    <model-viewer 
+        src="motor10.glb" 
+        alt="3D Motor Modeli" 
+        auto-rotate 
+        camera-controls 
+        ar>
+    </model-viewer>
 
-    <script>
-        // Sahne, Kamera ve Renderer Doğrudan Başlatılıyor
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf1f5f9);
-
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 10000);
-        camera.position.set(0, 0, 5);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-        // Işıklar
-        scene.add(new THREE.DirectionalLight(0xffffff, 2.5));
-        scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-
-        // Fare Kontrolü (Döndürme, Yakınlaşma)
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-
-        const loader = new THREE.GLTFLoader();
-        let loadedModel = null;
-
-        // motor10.glb Dosyasını Direkt Çağırıyoruz
-        loader.load('./motor10.glb', (gltf) => {
-            loadedModel = gltf.scene;
-
-            // Yüzey ve Materyal Görünürlük Garantisi
-            loadedModel.traverse((child) => {
-                if (child.isMesh) {
-                    child.material.side = THREE.DoubleSide;
-                    child.material.frustumCulled = false;
-                }
-            });
-
-            // Modeli Tam Merkeze Oturtma
-            const box = new THREE.Box3().setFromObject(loadedModel);
-            const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-
-            loadedModel.position.x = -center.x;
-            loadedModel.position.y = -center.y;
-            loadedModel.position.z = -center.z;
-            scene.add(loadedModel);
-
-            // Kamerayı Modele Göre Otomatik Hizalama
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const fov = camera.fov * (Math.PI / 180);
-            let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 2.2;
-            cameraZ = Math.max(cameraZ, 2);
-
-            camera.position.set(0, maxDim * 0.3, cameraZ);
-            camera.lookAt(0, 0, 0);
-
-            camera.near = cameraZ / 100;
-            camera.far = cameraZ * 100;
-            camera.updateProjectionMatrix();
-
-            controls.target.set(0, 0, 0);
-            controls.update();
-        }, undefined, (error) => {
-            console.error("Model yüklenirken hata oluştu:", error);
-        });
-
-        // Animasyon Döngüsü
-        (function animate(){
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        })();
-
-        // Ekran Boyutu Değişimi
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
 </body>
 </html>
