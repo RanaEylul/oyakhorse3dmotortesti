@@ -23,7 +23,7 @@
             --poster-color: transparent;
         }
 
-        /* EKRANDA CANLI KOORDİNAT GÖSTERİCİ (SAĞ ÜST) */
+        /* EKRANDA CANLI KOORDİNAT & DURUM GÖSTERİCİ (SAĞ ÜST) */
         #coord-display {
             position: fixed;
             top: 65px;
@@ -34,11 +34,12 @@
             padding: 12px 18px;
             border-radius: 12px;
             font-family: monospace;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             border: 2px solid #0284c7;
-            user-select: all;
+            max-width: 320px;
+            word-break: break-all;
         }
 
         /* TIKLANAN NOKTA İŞARETÇİLERİ */
@@ -190,7 +191,7 @@
             width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 6px;
         }
 
-        /* BİLDİRİM KUTUSU - ANINDA AÇILIR */
+        /* BİLDİRİM KUTUSU */
         #bildirim {
             display: none; position: fixed; top: 75px; left: 50%;
             transform: translateX(-50%); background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -207,8 +208,8 @@
 </head>
 <body>
 
-    <!-- EKRANDA CANLI KOORDİNAT GÖSTERİCİ (SAĞ ÜST) -->
-    <div id="coord-display">📍 Tıklanan: Tıklama bekleniyor...</div>
+    <!-- EKRANDA CANLI KOORDİNAT & DEBUG GÖSTERİCİ (SAĞ ÜST) -->
+    <div id="coord-display">📍 Tıklama bekleniyor...</div>
 
     <!-- DOĞRUDAN YÜKLENEN 3D MOTOR MODELİ -->
     <model-viewer 
@@ -310,18 +311,18 @@
 
         const viewer = document.getElementById('engine-viewer');
 
-        // 10 ADET NET ARIZA KOORDİNATI (Esnek Tolerans: 0.85)
+        // 10 ADET NET ARIZA KOORDİNATI (Geniş Tolerans: 1.2 - Kesin Yakalama)
         const hataliBolgeler = [
-            { id: 1,  x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 0.85, bulunan: false },
-            { id: 2,  x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 0.85, bulunan: false },
-            { id: 3,  x:  0.3152, y:  0.1784, z: -0.0339, tolerans: 0.85, bulunan: false },
-            { id: 4,  x:  0.3132, y:  0.2436, z:  0.0635, tolerans: 0.85, bulunan: false },
-            { id: 5,  x: -0.2782, y:  0.8708, z:  0.0973, tolerans: 0.85, bulunan: false },
-            { id: 6,  x: -0.3745, y:  0.8048, z: -0.0888, tolerans: 0.85, bulunan: false },
-            { id: 7,  x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.85, bulunan: false },
-            { id: 8,  x: -0.3746, y:  0.8009, z: -0.0924, tolerans: 0.85, bulunan: false },
-            { id: 9,  x:  0.3146, y:  0.1790, z: -0.0449, tolerans: 0.85, bulunan: false },
-            { id: 10, x:  0.3150, y:  0.1789, z: -0.0357, tolerans: 0.85, bulunan: false }
+            { id: 1,  x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 1.2, bulunan: false },
+            { id: 2,  x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 1.2, bulunan: false },
+            { id: 3,  x:  0.3152, y:  0.1784, z: -0.0339, tolerans: 1.2, bulunan: false },
+            { id: 4,  x:  0.3132, y:  0.2436, z:  0.0635, tolerans: 1.2, bulunan: false },
+            { id: 5,  x: -0.2782, y:  0.8708, z:  0.0973, tolerans: 1.2, bulunan: false },
+            { id: 6,  x: -0.3745, y:  0.8048, z: -0.0888, tolerans: 1.2, bulunan: false },
+            { id: 7,  x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 1.2, bulunan: false },
+            { id: 8,  x: -0.3746, y:  0.8009, z: -0.0924, tolerans: 1.2, bulunan: false },
+            { id: 9,  x:  0.3146, y:  0.1790, z: -0.0449, tolerans: 1.2, bulunan: false },
+            { id: 10, x:  0.3150, y:  0.1789, z: -0.0357, tolerans: 1.2, bulunan: false }
         ];
 
         // Form Gönderimi
@@ -351,26 +352,31 @@
             setTimeout(() => { girisEkrani.style.visibility = 'hidden'; }, 500);
         });
 
-        // HIZLANDIRILMIŞ VE ANLIK TIKLAMA ALGILAYICI
-        viewer.addEventListener('click', (event) => {
+        // TIKLAMA VE KOORDİNAT ALGILAMA (Gelişmiş Debug Eklenmiş)
+        viewer.addEventListener('click', async (event) => {
             if (!aktifKullanici) return;
 
             const rect = viewer.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
 
-            viewer.positionAndNormalFromPoint(x, y).then(hit => {
-                if (!hit || !hit.position) return;
+            const coordBox = document.getElementById('coord-display');
+            coordBox.innerText = `⏳ Tıklandı, hesaplanıyor...`;
+
+            try {
+                const hit = await viewer.positionAndNormalFromPoint(x, y);
+                
+                if (!hit || !hit.position) {
+                    coordBox.innerText = `⚠️ Model üstüne tıklanamadı (Boşluk)`;
+                    return;
+                }
 
                 const px = hit.position.x;
                 const py = hit.position.y;
                 const pz = hit.position.z;
 
-                // Ekranda canlı koordinatı yazdır
-                const coordText = `X: ${px.toFixed(4)}, Y: ${py.toFixed(4)}, Z: ${pz.toFixed(4)}`;
-                document.getElementById('coord-display').innerText = `📍 ${coordText}`;
+                coordBox.innerText = `X:${px.toFixed(3)} Y:${py.toFixed(3)} Z:${pz.toFixed(3)}`;
 
-                // Nokta İşaretçisi Ekleme
                 hotspotCounter++;
                 const hotspotName = `click-marker-${hotspotCounter}`;
                 const hotspotEl = document.createElement('div');
@@ -379,7 +385,6 @@
 
                 let isAriza = false;
 
-                // Mesafe Kontrolü
                 for (let hata of hataliBolgeler) {
                     const mesafe = Math.sqrt(
                         Math.pow(px - hata.x, 2) +
@@ -392,11 +397,9 @@
                         if (!hata.bulunan) {
                             hata.bulunan = true;
                             
-                            // Sayacı anında güncelle
                             const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
                             document.getElementById('progress-text').innerText = `${bulunanSayisi} / 10`;
 
-                            // Mesajı ANINDA Göster
                             const bildirim = document.getElementById('bildirim');
                             bildirim.style.display = 'block';
                             if (bildirimTimer) clearTimeout(bildirimTimer);
@@ -416,7 +419,11 @@
                 }
                 
                 viewer.appendChild(hotspotEl);
-            });
+
+            } catch (err) {
+                console.error("Tıklama hatası:", err);
+                coordBox.innerText = `❌ Hata oluştu! Konsola bakın.`;
+            }
         });
 
         // Sınavı Bitir
