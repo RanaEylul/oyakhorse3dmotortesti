@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Motor Kalite Kontrol & Sınav Portalı</title>
-    <!-- Google Model Viewer (3D Standart Kütüphane) -->
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <!-- Google Model Viewer (En Stabil CDN Bağlantısı) -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@latest/dist/model-viewer.min.js"></script>
     <!-- Karekod Kütüphanesi -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -23,7 +23,7 @@
             --poster-color: transparent;
         }
 
-        /* EKRANDA CANLI KOORDİNAT GÖSTERİCİ (SAĞ ÜST KÖŞE) */
+        /* EKRANDA CANLI KOORDİNAT GÖSTERİCİ (SAĞ ÜST) */
         #coord-display {
             position: fixed;
             top: 65px;
@@ -301,7 +301,15 @@
         let testKayıtlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
         let hotspotCounter = 0;
 
-        // 8 TAM NET ARIZA KOORDİNATI (Genişletilmiş 0.75 tolerans ile)
+        const viewer = document.getElementById('engine-viewer');
+
+        // MODEL YÜKLEME HATA UYARISI
+        viewer.addEventListener('error', (event) => {
+            console.error("Model yükleme hatası:", event);
+            alert("⚠️ motor11-v1.glb dosyası bulunamadı!\nLütfen dosyanın index.html ile aynı klasörde olduğunu ve tarayıcıda Live Server ile açtığınızı kontrol edin.");
+        });
+
+        // 8 ARIZA KOORDİNATI (Genişletilmiş 0.75 tolerans ile)
         const hataliBolgeler = [
             { id: 1, x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 0.75, bulunan: false },
             { id: 2, x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 0.75, bulunan: false },
@@ -342,8 +350,7 @@
             }, 500);
         });
 
-        // KOORDİNAT BAZLI TIKLAMA KONTROLÜ
-        const viewer = document.getElementById('engine-viewer');
+        // TIKLAMA VE KOORDİNAT ALGILAMA
         viewer.addEventListener('click', async (event) => {
             if (!aktifKullanici) return;
 
@@ -359,11 +366,8 @@
                 const pz = hit.position.z;
 
                 const coordText = `X: ${px.toFixed(4)}, Y: ${py.toFixed(4)}, Z: ${pz.toFixed(4)}`;
-
-                // EKRANDAKİ KUTUYA KOORDİNATI Yazdır
                 document.getElementById('coord-display').innerText = `📍 ${coordText}`;
 
-                // Model üzerine görsel nokta ekleme
                 hotspotCounter++;
                 const hotspotName = `click-marker-${hotspotCounter}`;
                 const hotspotEl = document.createElement('div');
