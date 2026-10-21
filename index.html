@@ -23,6 +23,24 @@
             --poster-color: transparent;
         }
 
+        /* EKRANDA CANLI KOORDİNAT GÖSTERİCİ (SAĞ ÜST KÖŞE) */
+        #coord-display {
+            position: fixed;
+            top: 65px;
+            right: 20px;
+            z-index: 9999;
+            background: rgba(15, 23, 42, 0.95);
+            color: #38bdf8;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 2px solid #0284c7;
+            user-select: all;
+        }
+
         /* TIKLANAN NOKTA İŞARETÇİLERİ */
         .hotspot {
             background: #ef4444;
@@ -183,6 +201,9 @@
 </head>
 <body>
 
+    <!-- EKRANDA CANLI KOORDİNAT GÖSTERİCİ (SAĞ ÜST) -->
+    <div id="coord-display">📍 Tıklanan: Tıklama bekleniyor...</div>
+
     <!-- DOĞRUDAN YÜKLENEN 3D MOTOR MODELİ -->
     <model-viewer 
         id="engine-viewer"
@@ -280,7 +301,7 @@
         let testKayıtlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
         let hotspotCounter = 0;
 
-        // 8 TAM NET ARIZA KOORDİNATI (Hepsine genişletilmiş 0.75 tolerans verildi)
+        // 8 TAM NET ARIZA KOORDİNATI (Genişletilmiş 0.75 tolerans ile)
         const hataliBolgeler = [
             { id: 1, x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 0.75, bulunan: false },
             { id: 2, x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 0.75, bulunan: false },
@@ -336,6 +357,11 @@
                 const px = hit.position.x;
                 const py = hit.position.y;
                 const pz = hit.position.z;
+
+                const coordText = `X: ${px.toFixed(4)}, Y: ${py.toFixed(4)}, Z: ${pz.toFixed(4)}`;
+
+                // EKRANDAKİ KUTUYA KOORDİNATI Yazdır
+                document.getElementById('coord-display').innerText = `📍 ${coordText}`;
 
                 // Model üzerine görsel nokta ekleme
                 hotspotCounter++;
