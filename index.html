@@ -1,275 +1,475 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Motor Kalite Kontrol & Sınav Portalı</title>
-    <!-- Google Model Viewer Altyapısı -->
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@latest/dist/model-viewer.min.js"></script>
-    <!-- Karekod Kütüphanesi -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-        body, html { margin: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f1f5f9; color: #1e293b; }
 
-        /* 3D MODEL ALANI */
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@latest/dist/model-viewer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
         model-viewer {
             width: 100vw;
             height: 100vh;
             position: absolute;
-            top: 0;
-            left: 0;
+            inset: 0;
             z-index: 1;
             --poster-color: transparent;
         }
 
-        /* EKRANDA CANLI KOORDİNAT & DEBUG GÖSTERİCİ (SAĞ ÜST) */
         #coord-display {
             position: fixed;
             top: 65px;
             right: 20px;
             z-index: 9999;
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, .95);
             color: #38bdf8;
             padding: 12px 18px;
             border-radius: 12px;
             font-family: monospace;
             font-size: 13px;
             font-weight: bold;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 20px #0006;
             border: 2px solid #0284c7;
             max-width: 320px;
             word-break: break-all;
         }
 
-        /* TIKLANAN NOKTA İŞARETÇİLERİ */
         .hotspot {
             background: #ef4444;
-            border: 2px solid #ffffff;
+            border: 2px solid white;
             border-radius: 50%;
             width: 16px;
             height: 16px;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+            box-shadow: 0 0 10px #ef4444cc;
             pointer-events: none;
         }
 
         .hotspot.found {
             background: #10b981;
-            box-shadow: 0 0 12px rgba(16, 185, 129, 0.9);
+            box-shadow: 0 0 12px #10b981e6;
         }
 
-        /* GİRİŞ & KAYIT EKRANI */
         #giris-ekrani {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000; transition: opacity 0.5s ease, visibility 0.5s; padding: 20px;
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0 50%, #cbd5e1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity .5s, visibility .5s;
+            padding: 20px;
         }
 
         .hero-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(16px); padding: 36px 40px; border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(148, 163, 184, 0.35); border: 1px solid rgba(255, 255, 255, 0.9);
-            max-width: 500px; width: 100%; text-align: center;
+            background: rgba(255,255,255,.96);
+            backdrop-filter: blur(16px);
+            padding: 36px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px #94a3b859;
+            border: 1px solid #ffffffe6;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
         }
 
         .badge {
-            background: #e0f2fe; color: #0284c7; font-size: 12px; font-weight: 700;
-            padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px;
-            display: inline-block; margin-bottom: 12px;
+            background: #e0f2fe;
+            color: #0284c7;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 12px;
         }
 
-        .hero-card h1 { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 10px 0; }
-        .hero-card p { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+        .hero-card h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 10px;
+        }
 
-        .form-group { text-align: left; margin-bottom: 14px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px; }
+        .hero-card p {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+
         .form-group input {
-            width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid #cbd5e1;
-            font-size: 14px; background: #f8fafc; transition: border-color 0.2s;
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-size: 14px;
+            background: #f8fafc;
         }
-        .form-group input:focus { outline: none; border-color: #0284c7; background: #fff; }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0284c7;
+            background: white;
+        }
 
         #basla-btn {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white; border: none; padding: 14px 32px; font-size: 16px; font-weight: 700;
-            border-radius: 12px; cursor: pointer; width: 100%; margin-top: 10px;
-            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3); transition: all 0.2s;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 10px 20px #2563eb4d;
         }
-        #basla-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 25px rgba(37, 99, 235, 0.4); }
 
-        .error-msg { color: #dc2626; font-size: 12px; font-weight: 600; margin-top: 8px; display: none; }
+        #basla-btn:hover { transform: translateY(-2px); }
 
-        /* ARAYÜZ ÜST & ALT PANELLERİ */
+        .error-msg {
+            color: #dc2626;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            display: none;
+        }
+
         #top-header {
-            position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
-            z-index: 10; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px);
-            padding: 8px 24px; border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 8px 20px rgba(148, 163, 184, 0.2); font-size: 14px; font-weight: 700; color: #0f172a;
-            text-align: center; max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: #ffffffe6;
+            backdrop-filter: blur(12px);
+            padding: 8px 24px;
+            border-radius: 30px;
+            border: 1px solid #ffffffe6;
+            box-shadow: 0 8px 20px #94a3b833;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            text-align: center;
+            max-width: 80%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         #bottom-status-bar {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px);
-            padding: 10px 24px; border-radius: 20px; border: 1px solid rgba(203, 213, 225, 0.8);
-            box-shadow: 0 10px 25px rgba(148, 163, 184, 0.25); display: flex; align-items: center; gap: 20px;
-            font-size: 14px; font-weight: 600; color: #334155;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: #fffffff2;
+            backdrop-filter: blur(12px);
+            padding: 10px 24px;
+            border-radius: 20px;
+            border: 1px solid #cbd5cdd9;
+            box-shadow: 0 10px 25px #94a3b840;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
         }
 
         #bitir-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white; border: none; padding: 8px 18px; border-radius: 10px;
-            font-size: 13px; font-weight: 700; cursor: pointer; transition: transform 0.2s;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
         }
-        #bitir-btn:hover { transform: translateY(-1px); }
 
-        /* SAĞ ÜST YÖNETİCİ GİRİŞİ */
         #admin-login-btn {
-            position: fixed; top: 16px; right: 20px; z-index: 20;
-            background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(203, 213, 225, 0.8);
-            color: #475569; padding: 8px 14px; border-radius: 12px; cursor: pointer;
-            font-size: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
-            transition: all 0.2s;
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            z-index: 20;
+            background: #fffffff2;
+            border: 1px solid #cbd5e1cc;
+            color: #475569;
+            padding: 8px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
         }
-        #admin-login-btn:hover { background: #f8fafc; color: #0f172a; }
 
-        /* YÖNETİCİ PANELİ (SOL) */
         #panel {
-            position: fixed; top: 70px; left: -420px; z-index: 15;
-            background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(14px);
-            padding: 20px; border-radius: 18px; border: 1px solid rgba(203, 213, 225, 0.8);
-            box-shadow: 0 20px 30px rgba(148, 163, 184, 0.3); width: 380px; max-height: calc(100vh - 100px);
-            overflow-y: auto; color: #0f172a; transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed;
+            top: 70px;
+            left: -420px;
+            z-index: 15;
+            background: #fffffff5;
+            backdrop-filter: blur(14px);
+            padding: 20px;
+            border-radius: 18px;
+            border: 1px solid #cbd5e1cc;
+            box-shadow: 0 20px 30px #94a3b84d;
+            width: 380px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            color: #0f172a;
+            transition: left .35s cubic-bezier(.4,0,.2,1);
         }
+
         #panel.open { left: 16px; }
 
-        #panel h3 { margin: 0 0 12px 0; font-size: 15px; font-weight: 700; color: #0284c7; }
+        #panel h3 {
+            margin: 0 0 12px;
+            font-size: 15px;
+            color: #0284c7;
+        }
 
         table.results-table {
-            width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px;
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-top: 10px;
         }
-        table.results-table th, table.results-table td {
-            padding: 6px 8px; text-align: left; border-bottom: 1px solid #e2e8f0;
+
+        table.results-table th,
+        table.results-table td {
+            padding: 6px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
         }
-        table.results-table th { background: #f1f5f9; color: #475569; font-weight: 700; }
+
+        table.results-table th {
+            background: #f1f5f9;
+            color: #475569;
+        }
 
         .excel-dl-btn, .qr-btn {
-            color: white; border: none; padding: 10px 14px; border-radius: 10px;
-            font-size: 12px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 10px;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
         }
-        .excel-dl-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
-        .excel-dl-btn:hover { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
-        .qr-btn { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }
-        .qr-btn:hover { background: linear-gradient(135deg, #0369a1 0%, #075985 100%); }
 
-        /* KAREKOD POPUP MODAL */
+        .excel-dl-btn { background: linear-gradient(135deg, #10b981, #059669); }
+        .qr-btn { background: linear-gradient(135deg, #0284c7, #0369a1); }
+
         #qr-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px);
-            z-index: 2000; justify-content: center; align-items: center; padding: 16px;
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #0f172ab3;
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
         }
 
         .qr-card {
-            background: white; padding: 28px 24px; border-radius: 20px; text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3); max-width: 360px; width: 100%; position: relative;
+            background: white;
+            padding: 28px 24px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 40px #0000004d;
+            max-width: 360px;
+            width: 100%;
+            position: relative;
         }
 
-        #qrcode-container { display: flex; justify-content: center; margin: 16px 0; }
-        #qrcode-container img, #qrcode-container canvas { border-radius: 12px; border: 4px solid #f8fafc; max-width: 100%; height: auto; }
+        #qrcode-container {
+            display: flex;
+            justify-content: center;
+            margin: 16px 0;
+        }
+
+        #qrcode-container img,
+        #qrcode-container canvas {
+            border-radius: 12px;
+            border: 4px solid #f8fafc;
+            max-width: 100%;
+            height: auto;
+        }
 
         .qr-close-btn {
-            position: absolute; top: 12px; right: 16px; border: none; background: none;
-            font-size: 22px; font-weight: 700; cursor: pointer; color: #64748b;
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            border: none;
+            background: none;
+            font-size: 22px;
+            cursor: pointer;
         }
 
         .qr-dl-action-btn {
-            background: #0f172a; color: white; border: none; padding: 10px 16px;
-            border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer;
-            width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 6px;
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
         }
 
-        /* BİLDİRİM KUTUSU */
         #bildirim {
-            display: none; position: fixed; top: 75px; left: 50%;
-            transform: translateX(-50%); background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white; padding: 12px 28px; font-size: 16px; font-weight: 800;
-            border-radius: 14px; z-index: 999; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
-            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: none;
+            position: fixed;
+            top: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 14px;
+            z-index: 999;
+            box-shadow: 0 10px 25px #10b98166;
+            text-align: center;
+            max-width: calc(100vw - 24px);
         }
 
-        @keyframes popIn {
-            0% { transform: translateX(-50%) scale(0.7); opacity: 0; }
-            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        @media (max-width: 600px) {
+            .hero-card { padding: 26px 22px; }
+            .hero-card h1 { font-size: 21px; }
+            #coord-display {
+                top: 62px;
+                right: 10px;
+                max-width: 200px;
+                font-size: 11px;
+            }
+            #top-header {
+                top: 10px;
+                left: 10px;
+                transform: none;
+                max-width: calc(100% - 150px);
+                font-size: 11px;
+                padding: 8px 12px;
+            }
+            #admin-login-btn { top: 10px; right: 10px; padding: 8px 10px; }
+            #bottom-status-bar {
+                bottom: 10px;
+                width: calc(100% - 20px);
+                justify-content: space-between;
+                gap: 8px;
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+            #panel {
+                width: calc(100% - 32px);
+                left: calc(-100% - 20px);
+            }
+            #panel.open { left: 16px; }
         }
     </style>
 </head>
-<body>
 
-    <!-- EKRANDA CANLI KOORDİNAT & DEBUG GÖSTERİCİ (SAĞ ÜST) -->
+<body>
     <div id="coord-display">📍 Tıklama bekleniyor...</div>
 
-    <!-- DOĞRUDAN YÜKLENEN 3D MOTOR MODELİ -->
-    <model-viewer 
+    <model-viewer
         id="engine-viewer"
-        src="motor11-v1.glb" 
-        alt="3D Motor Modeli" 
-        camera-controls 
+        src="motor11-v1.glb"
+        alt="3D Motor Modeli"
+        camera-controls
         disable-pan
         shadow-intensity="1.5"
         ar>
     </model-viewer>
 
-    <!-- GİRİŞ & KAYIT EKRANI -->
     <div id="giris-ekrani">
         <div class="hero-card">
             <span class="badge">Kalite Kontrol Sınav Portalı</span>
             <h1>3D Motor Muayene Sınavı</h1>
-            <p>Sınava başlamak için bilgilerinizi doldurun. (Her Soru: 10 Puan, Baraj: 70 Puan)</p>
-            
+            <p>Sınava başlamak için bilgilerinizi doldurun. Her arıza 10 puan, başarı barajı 70 puan.</p>
+
             <form id="kayit-form">
                 <div class="form-group">
-                    <label>Adınız</label>
+                    <label for="input-ad">Adınız</label>
                     <input type="text" id="input-ad" placeholder="Örn: Ahmet" required>
                 </div>
+
                 <div class="form-group">
-                    <label>Soyadınız</label>
+                    <label for="input-soyad">Soyadınız</label>
                     <input type="text" id="input-soyad" placeholder="Örn: Yılmaz" required>
                 </div>
+
                 <div class="form-group">
-                    <label>Bölüm / Departman</label>
+                    <label for="input-bolum">Bölüm / Departman</label>
                     <input type="text" id="input-bolum" placeholder="Örn: Kalite Güvence" required>
                 </div>
+
                 <div class="form-group">
-                    <label>Sicil No</label>
+                    <label for="input-sicil">Sicil No</label>
                     <input type="text" id="input-sicil" placeholder="Örn: S12345" required>
                 </div>
-                <div id="form-error" class="error-msg">Bu sicil numarası ile daha önce sınava girilmiş!</div>
+
+                <div id="form-error" class="error-msg">
+                    Bu sicil numarası ile daha önce sınava girilmiş!
+                </div>
+
                 <button type="submit" id="basla-btn">Sınavı Başlat 🚀</button>
             </form>
         </div>
     </div>
 
-    <!-- ÜST BAŞLIK -->
     <div id="top-header">🔍 3D Motor Kalite Kontrol Sınavı</div>
-
-    <!-- SAĞ ÜST YÖNETİCİ GİRİŞ BUTONU -->
     <button id="admin-login-btn">🔒 Yönetici Girişi</button>
 
-    <!-- ALT BİLGİ & SINAVI BİTİR BUTONU -->
     <div id="bottom-status-bar">
-        <span>Arıza Tespiti: <b id="progress-text" style="color:#0284c7">0 / 10</b></span>
+        <span>Arıza Tespiti: <b id="progress-text" style="color:#0284c7">0 / 9</b></span>
         <button id="bitir-btn">Sınavı Bitir 🏁</button>
     </div>
 
-    <!-- YÖNETİCİ PANELİ -->
     <div id="panel">
-        <h3>📊 Kayıtlı Sınav Sonuçları (Excel)</h3>
-        <p style="font-size:11px; color:#64748b; margin-top:-6px;">Yönetici paneli - Katılımcı skor tablosu:</p>
-        
-        <div style="max-height: 160px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h3>📊 Kayıtlı Sınav Sonuçları</h3>
+        <p style="font-size:11px;color:#64748b;margin-top:-6px">
+            Yönetici paneli - Katılımcı skor tablosu:
+        </p>
+
+        <div style="max-height:160px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px">
             <table class="results-table">
                 <thead>
                     <tr>
@@ -284,59 +484,116 @@
             </table>
         </div>
 
-        <button class="excel-dl-btn" id="excel-export-btn">📊 Tüm Sonuçları Excel (CSV) İndir</button>
-        <button class="qr-btn" id="qr-generate-btn">📱 Sınav Linki Karekodu Oluştur</button>
-        <small id="status" style="color: #10b981; font-size: 11px; display: block; margin-top: 12px; font-weight: 600; text-align: center;">✅ motor11-v1.glb Yayında</small>
+        <button class="excel-dl-btn" id="excel-export-btn">
+            📊 Tüm Sonuçları Excel (CSV) İndir
+        </button>
+
+        <button class="qr-btn" id="qr-generate-btn">
+            📱 Sınav Linki Karekodu Oluştur
+        </button>
+
+        <small id="status" style="color:#10b981;font-size:11px;display:block;margin-top:12px;text-align:center">
+            ⏳ 3D model yükleniyor...
+        </small>
     </div>
 
-    <!-- KAREKOD POPUP MODAL -->
     <div id="qr-modal">
         <div class="qr-card">
-            <button class="qr-close-btn" id="qr-close-btn">&times;</button>
-            <h3 style="margin:0 0 6px 0; color:#0f172a; font-size:16px;">📱 Mobil Katılım Karekodu</h3>
-            <p style="font-size:12px; color:#64748b; margin:0 0 10px 0;">Personeller telefon kamerasından okutarak sınava katılabilir.</p>
+            <button class="qr-close-btn" id="qr-close-btn" aria-label="Kapat">&times;</button>
+            <h3 style="margin:0 0 6px;color:#0f172a;font-size:16px">
+                📱 Mobil Katılım Karekodu
+            </h3>
+            <p style="font-size:12px;color:#64748b">
+                Personeller telefon kamerasından okutarak sınava katılabilir.
+            </p>
             <div id="qrcode-container"></div>
-            <span style="font-size:10px; color:#94a3b8; word-break:break-all; display:block; margin-bottom:10px;" id="qr-link-text"></span>
-            <button class="qr-dl-action-btn" id="qr-download-btn">💾 Karekodu Resim (.PNG) Olarak İndir</button>
+            <span id="qr-link-text" style="font-size:10px;color:#94a3b8;word-break:break-all;display:block"></span>
+            <button class="qr-dl-action-btn" id="qr-download-btn">
+                💾 Karekod PNG İndir
+            </button>
         </div>
     </div>
 
-    <div id="bildirim">⚠️ Arıza Bulundu! (+10 Puan)</div>
+    <div id="bildirim" role="status" aria-live="polite">
+        ⚠️ Arıza Bulundu! (+10 Puan)
+    </div>
 
     <script>
         let aktifKullanici = null;
-        let testKayıtlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
         let hotspotCounter = 0;
         let bildirimTimer = null;
 
+        let testKayitlari = [];
+
+        try {
+            testKayitlari = JSON.parse(
+                localStorage.getItem('engine_test_results') || '[]'
+            );
+
+            if (!Array.isArray(testKayitlari)) {
+                testKayitlari = [];
+            }
+        } catch (error) {
+            testKayitlari = [];
+        }
+
         const viewer = document.getElementById('engine-viewer');
 
-        // TAM 10 YENİ GÖNDERİLEN ARIZA KOORDİNATI (Geniş Tolerans: 1.2)
+        // Verilen 9 arıza koordinatı.
+        // Tolerans, 3D koordinatlar arasındaki mesafe birimidir.
         const hataliBolgeler = [
-            { id: 1,  x: -0.374, y:  0.802, z:  0.079, tolerans: 1.2, bulunan: false },
-            { id: 2,  x:  0.314, y:  0.268, z: -0.093, tolerans: 1.2, bulunan: false },
-            { id: 3,  x:  0.315, y:  0.175, z: -0.033, tolerans: 1.2, bulunan: false },
-            { id: 4,  x:  0.313, y:  0.243, z:  0.072, tolerans: 1.2, bulunan: false },
-            { id: 5,  x: -0.371, y:  0.803, z: -0.087, tolerans: 1.2, bulunan: false },
-            { id: 6,  x:  0.314, y:  0.332, z: -0.042, tolerans: 1.2, bulunan: false },
-            { id: 7,  x: -0.267, y:  0.871, z:  0.081, tolerans: 1.2, bulunan: false },
-            { id: 8,  x: -0.352, y:  0.738, z:  0.312, tolerans: 1.2, bulunan: false },
-            { id: 9,  x: -0.375, y:  0.801, z: -0.094, tolerans: 1.2, bulunan: false },
-            { id: 10, x: -0.373, y:  0.794, z:  0.074, tolerans: 1.2, bulunan: false }
+            { id: 1, x:  0.314, y: 0.268, z: -0.093, tolerans: 0.04, bulunan: false },
+            { id: 2, x:  0.315, y: 0.175, z: -0.033, tolerans: 0.04, bulunan: false },
+            { id: 3, x:  0.313, y: 0.243, z:  0.072, tolerans: 0.04, bulunan: false },
+            { id: 4, x: -0.371, y: 0.803, z: -0.087, tolerans: 0.04, bulunan: false },
+            { id: 5, x:  0.314, y: 0.332, z: -0.042, tolerans: 0.04, bulunan: false },
+            { id: 6, x: -0.267, y: 0.871, z:  0.081, tolerans: 0.04, bulunan: false },
+            { id: 7, x: -0.352, y: 0.738, z:  0.312, tolerans: 0.04, bulunan: false },
+            { id: 8, x: -0.375, y: 0.801, z: -0.094, tolerans: 0.04, bulunan: false },
+            { id: 9, x: -0.373, y: 0.794, z:  0.074, tolerans: 0.04, bulunan: false }
         ];
 
-        // Form Gönderimi
+        function ilerlemeyiGuncelle() {
+            const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
+
+            document.getElementById('progress-text').textContent =
+                `${bulunanSayisi} / ${hataliBolgeler.length}`;
+        }
+
+        function bildirimGoster(metin) {
+            const bildirim = document.getElementById('bildirim');
+
+            bildirim.textContent = metin;
+            bildirim.style.display = 'block';
+
+            if (bildirimTimer) {
+                clearTimeout(bildirimTimer);
+            }
+
+            bildirimTimer = setTimeout(() => {
+                bildirim.style.display = 'none';
+            }, 1800);
+        }
+
+        // Katılımcı kayıt formu.
         document.getElementById('kayit-form').addEventListener('submit', (e) => {
             e.preventDefault();
+
             const sicilInput = document.getElementById('input-sicil').value.trim();
             const errorMsg = document.getElementById('form-error');
 
-            if (testKayıtlari.some(k => k.sicil === sicilInput)) {
+            const dahaOnceGirmis = testKayitlari.some(k =>
+                String(k.sicil).toLocaleLowerCase('tr-TR') ===
+                sicilInput.toLocaleLowerCase('tr-TR')
+            );
+
+            if (dahaOnceGirmis) {
                 errorMsg.style.display = 'block';
                 return;
             }
 
             errorMsg.style.display = 'none';
+
             aktifKullanici = {
                 ad: document.getElementById('input-ad').value.trim(),
                 soyad: document.getElementById('input-soyad').value.trim(),
@@ -347,12 +604,23 @@
                 tarih: new Date().toLocaleString('tr-TR')
             };
 
+            // Her sınav başladığında koordinatları sıfırla.
+            hataliBolgeler.forEach(hata => {
+                hata.bulunan = false;
+            });
+
+            document.querySelectorAll('.hotspot').forEach(el => el.remove());
+            ilerlemeyiGuncelle();
+
             const girisEkrani = document.getElementById('giris-ekrani');
             girisEkrani.style.opacity = '0';
-            setTimeout(() => { girisEkrani.style.visibility = 'hidden'; }, 500);
+
+            setTimeout(() => {
+                girisEkrani.style.visibility = 'hidden';
+            }, 500);
         });
 
-        // TIKLAMA VE KOORDİNAT ALGILAMA
+        // 3D modelde tıklanan noktanın koordinatını bul.
         viewer.addEventListener('click', async (event) => {
             if (!aktifKullanici) return;
 
@@ -361,13 +629,18 @@
             const y = event.clientY - rect.top;
 
             const coordBox = document.getElementById('coord-display');
-            coordBox.innerText = `⏳ Tıklandı, hesaplanıyor...`;
+            coordBox.textContent = '⏳ Koordinat hesaplanıyor...';
 
             try {
+                if (typeof viewer.positionAndNormalFromPoint !== 'function') {
+                    coordBox.textContent = '⚠️ Model henüz hazır değil';
+                    return;
+                }
+
                 const hit = await viewer.positionAndNormalFromPoint(x, y);
-                
+
                 if (!hit || !hit.position) {
-                    coordBox.innerText = `⚠️ Model üstüne tıklanamadı`;
+                    coordBox.textContent = '⚠️ Model yüzeyine tıklanamadı';
                     return;
                 }
 
@@ -375,92 +648,131 @@
                 const py = hit.position.y;
                 const pz = hit.position.z;
 
-                coordBox.innerText = `X:${px.toFixed(3)} Y:${py.toFixed(3)} Z:${pz.toFixed(3)}`;
+                coordBox.textContent =
+                    `X:${px.toFixed(3)} Y:${py.toFixed(3)} Z:${pz.toFixed(3)}`;
 
+                // Tıklama konumuna kırmızı işaretçi ekle.
                 hotspotCounter++;
-                const hotspotName = `click-marker-${hotspotCounter}`;
+
                 const hotspotEl = document.createElement('div');
-                hotspotEl.slot = hotspotName;
+                hotspotEl.slot = `click-marker-${hotspotCounter}`;
                 hotspotEl.className = 'hotspot';
+                hotspotEl.dataset.position = `${px} ${py} ${pz}`;
 
-                let isAriza = false;
+                if (hit.normal) {
+                    hotspotEl.dataset.normal =
+                        `${hit.normal.x} ${hit.normal.y} ${hit.normal.z}`;
+                }
 
-                for (let hata of hataliBolgeler) {
-                    const mesafe = Math.sqrt(
-                        Math.pow(px - hata.x, 2) +
-                        Math.pow(py - hata.y, 2) +
-                        Math.pow(pz - hata.z, 2)
-                    );
+                // Tıklanan noktayı henüz bulunmamış koordinatlarla karşılaştır.
+                let enYakinAriza = null;
+                let enKucukMesafe = Infinity;
 
-                    if (mesafe <= hata.tolerans) {
-                        isAriza = true;
-                        if (!hata.bulunan) {
-                            hata.bulunan = true;
-                            
-                            const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-                            document.getElementById('progress-text').innerText = `${bulunanSayisi} / 10`;
+                for (const hata of hataliBolgeler) {
+                    if (hata.bulunan) continue;
 
-                            const bildirim = document.getElementById('bildirim');
-                            bildirim.style.display = 'block';
-                            if (bildirimTimer) clearTimeout(bildirimTimer);
-                            bildirimTimer = setTimeout(() => { bildirim.style.display = 'none'; }, 1800);
-                        }
-                        break;
+                    const dx = px - hata.x;
+                    const dy = py - hata.y;
+                    const dz = pz - hata.z;
+
+                    const mesafe = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                    if (
+                        mesafe <= hata.tolerans &&
+                        mesafe < enKucukMesafe
+                    ) {
+                        enYakinAriza = hata;
+                        enKucukMesafe = mesafe;
                     }
                 }
 
-                if (isAriza) {
+                // Eşleşen arıza ilk defa bulunuyorsa bildir ve sayacı artır.
+                if (enYakinAriza) {
+                    enYakinAriza.bulunan = true;
                     hotspotEl.classList.add('found');
+
+                    bildirimGoster(
+                        `⚠️ Arıza Bulundu! (+10 Puan) — ${enYakinAriza.id}. nokta`
+                    );
+
+                    ilerlemeyiGuncelle();
                 }
 
-                hotspotEl.dataset.position = `${px} ${py} ${pz}`;
-                if (hit.normal) {
-                    hotspotEl.dataset.normal = `${hit.normal.x} ${hit.normal.y} ${hit.normal.z}`;
-                }
-                
                 viewer.appendChild(hotspotEl);
 
             } catch (err) {
-                console.error("Tıklama hatası:", err);
-                coordBox.innerText = `❌ Hata oluştu!`;
+                console.error('Tıklama koordinatı hatası:', err);
+                coordBox.textContent = '❌ Koordinat hesaplanırken hata oluştu';
             }
         });
 
-        // Sınavı Bitir
+        // Sınavı bitir ve sonucu kaydet.
         document.getElementById('bitir-btn').addEventListener('click', () => {
             if (!aktifKullanici) {
-                alert("Lütfen önce bilgilerinizi girip sınavı başlatın!");
+                alert('Lütfen önce bilgilerinizi girip sınavı başlatın!');
                 return;
             }
 
-            const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-            aktifKullanici.puan = bulunanSayisi * 10;
-            aktifKullanici.durum = aktifKullanici.puan >= 70 ? 'BAŞARILI' : 'BAŞARISIZ';
+            const bulunanSayisi =
+                hataliBolgeler.filter(h => h.bulunan).length;
 
-            testKayıtlari.push(aktifKullanici);
-            localStorage.setItem('engine_test_results', JSON.stringify(testKayıtlari));
+            aktifKullanici.puan = bulunanSayisi * 10;
+            aktifKullanici.durum =
+                aktifKullanici.puan >= 70 ? 'BAŞARILI' : 'BAŞARISIZ';
+
+            testKayitlari.push({ ...aktifKullanici });
+
+            try {
+                localStorage.setItem(
+                    'engine_test_results',
+                    JSON.stringify(testKayitlari)
+                );
+            } catch (err) {
+                alert('Sonuç tarayıcıya kaydedilemedi.');
+            }
+
             tabloyuCiz();
 
-            alert(`Sınavınız Tamamlandı!\nToplam Puanınız: ${aktifKullanici.puan} / 100\nDurum: ${aktifKullanici.durum}`);
+            alert(
+                `Sınavınız Tamamlandı!\n` +
+                `Bulunan Arıza: ${bulunanSayisi} / ${hataliBolgeler.length}\n` +
+                `Toplam Puanınız: ${aktifKullanici.puan} / ${hataliBolgeler.length * 10}\n` +
+                `Durum: ${aktifKullanici.durum}`
+            );
+
             location.reload();
         });
 
-        // Yönetici Girişi
+        // Yönetici girişi.
         document.getElementById('admin-login-btn').addEventListener('click', () => {
-            if (prompt("Yönetici şifresini giriniz:") === "admin2026") {
+            if (prompt('Yönetici şifresini giriniz:') === 'admin2026') {
                 document.getElementById('panel').classList.toggle('open');
             } else {
-                alert("Hatalı şifre!");
+                alert('Hatalı şifre!');
             }
         });
 
-        // Karekod Oluşturma
+        // Karekod oluştur.
         document.getElementById('qr-generate-btn').addEventListener('click', () => {
+            if (typeof QRCode === 'undefined') {
+                alert('Karekod kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.');
+                return;
+            }
+
             const currentUrl = window.location.href;
             const qrContainer = document.getElementById('qrcode-container');
+
             qrContainer.innerHTML = '';
-            new QRCode(qrContainer, { text: currentUrl, width: 180, height: 180, colorDark: "#0f172a", colorLight: "#ffffff" });
-            document.getElementById('qr-link-text').innerText = currentUrl;
+
+            new QRCode(qrContainer, {
+                text: currentUrl,
+                width: 180,
+                height: 180,
+                colorDark: '#0f172a',
+                colorLight: '#ffffff'
+            });
+
+            document.getElementById('qr-link-text').textContent = currentUrl;
             document.getElementById('qr-modal').style.display = 'flex';
         });
 
@@ -468,39 +780,123 @@
             document.getElementById('qr-modal').style.display = 'none';
         });
 
-        document.getElementById('qr-download-btn').addEventListener('click', () => {
-            const qrImg = document.querySelector('#qrcode-container img');
-            if (qrImg && qrImg.src) {
-                const link = document.createElement('a');
-                link.href = qrImg.src;
-                link.download = 'Sinav_Erisim_Karekod.png';
-                link.click();
+        document.getElementById('qr-modal').addEventListener('click', (event) => {
+            if (event.target.id === 'qr-modal') {
+                document.getElementById('qr-modal').style.display = 'none';
             }
         });
 
-        // Sonuç Tablosu
+        // Karekod PNG olarak indir.
+        document.getElementById('qr-download-btn').addEventListener('click', () => {
+            const container = document.getElementById('qrcode-container');
+            const qrImg = container.querySelector('img');
+            const qrCanvas = container.querySelector('canvas');
+
+            const dataUrl = qrImg?.src ||
+                (qrCanvas ? qrCanvas.toDataURL('image/png') : null);
+
+            if (!dataUrl) {
+                alert('Önce karekod oluşturun.');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = 'Sinav_Erisim_Karekod.png';
+            link.click();
+        });
+
+        // Yönetici sonuç tablosu.
         function tabloyuCiz() {
             const tbody = document.getElementById('results-tbody');
             tbody.innerHTML = '';
-            testKayıtlari.forEach(k => {
+
+            testKayitlari.forEach(k => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${k.sicil}</td><td>${k.ad} ${k.soyad}</td><td>${k.bolum}</td><td><b>${k.puan}</b></td><td style="${k.puan >= 70 ? 'color: #15803d;' : 'color: #b91c1c;'}">${k.durum}</td>`;
+                const values = [
+                    k.sicil,
+                    `${k.ad} ${k.soyad}`,
+                    k.bolum,
+                    k.puan,
+                    k.durum
+                ];
+
+                values.forEach((value, index) => {
+                    const td = document.createElement('td');
+
+                    if (index === 3) {
+                        const strong = document.createElement('b');
+                        strong.textContent = value ?? '';
+                        td.appendChild(strong);
+                    } else {
+                        td.textContent = value ?? '';
+                    }
+
+                    if (index === 4) {
+                        td.style.color =
+                            k.puan >= 70 ? '#15803d' : '#b91c1c';
+                    }
+
+                    tr.appendChild(td);
+                });
+
                 tbody.appendChild(tr);
             });
         }
 
-        // Excel Export
+        // Sonuçları Excel uyumlu CSV olarak indir.
         document.getElementById('excel-export-btn').addEventListener('click', () => {
-            if (testKayıtlari.length === 0) return alert("Kayıt yok.");
-            let csv = "\uFEFFSicil No;Ad;Soyad;Bölüm;Puan;Durum;Tarih\n";
-            testKayıtlari.forEach(k => csv += `"${k.sicil}";"${k.ad}";"${k.soyad}";"${k.bolum}";"${k.puan}";"${k.durum}";"${k.tarih}"\n`);
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `Sinav_Sonuclari.csv`;
+            if (testKayitlari.length === 0) {
+                alert('Kayıt yok.');
+                return;
+            }
+
+            const csvEscape = value =>
+                `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+            let csv =
+                '\uFEFFSicil No;Ad;Soyad;Bölüm;Puan;Durum;Tarih\n';
+
+            testKayitlari.forEach(k => {
+                csv += [
+                    k.sicil,
+                    k.ad,
+                    k.soyad,
+                    k.bolum,
+                    k.puan,
+                    k.durum,
+                    k.tarih
+                ].map(csvEscape).join(';') + '\n';
+            });
+
+            const blob = new Blob([csv], {
+                type: 'text/csv;charset=utf-8;'
+            });
+
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+
+            link.href = url;
+            link.download = 'Sinav_Sonuclari.csv';
             link.click();
+
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+
+        viewer.addEventListener('load', () => {
+            document.getElementById('status').textContent =
+                '✅ motor11-v1.glb başarıyla yüklendi';
+        });
+
+        viewer.addEventListener('error', () => {
+            const status = document.getElementById('status');
+            status.textContent =
+                '❌ Model yüklenemedi. motor11-v1.glb dosyasını kontrol edin.';
+            status.style.color = '#dc2626';
         });
 
         tabloyuCiz();
+        ilerlemeyiGuncelle();
     </script>
 </body>
 </html>
