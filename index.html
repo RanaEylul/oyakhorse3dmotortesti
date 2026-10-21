@@ -3,521 +3,312 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Motor Kalite Kontrol & Sınav Portalı</title>
-
-<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@latest/dist/model-viewer.min.js"></script>
+<title>3D Motor Kalite Kontrol Sınavı</title>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 *{box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f1f5f9;color:#1e293b}
-model-viewer{width:100vw;height:100vh;position:absolute;inset:0;z-index:1;--poster-color:transparent}
-.hotspot{background:#ef4444;border:2px solid white;border-radius:50%;width:16px;height:16px;box-shadow:0 0 10px #ef4444cc;pointer-events:none}
-.hotspot.found{background:#10b981;box-shadow:0 0 12px #10b981e6}
-#giris-ekrani{position:fixed;inset:0;background:linear-gradient(135deg,#f8fafc,#e2e8f0 50%,#cbd5e1);display:flex;justify-content:center;align-items:center;z-index:1000;transition:opacity .5s,visibility .5s;padding:20px}
-.hero-card{background:#fffffff5;backdrop-filter:blur(16px);padding:36px 40px;border-radius:24px;box-shadow:0 20px 40px #94a3b859;border:1px solid #ffffffe6;max-width:500px;width:100%;text-align:center}
-.badge{background:#e0f2fe;color:#0284c7;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;display:inline-block;margin-bottom:12px}
-.hero-card h1{font-size:24px;font-weight:800;color:#0f172a;margin:0 0 10px}
-.hero-card p{font-size:13px;color:#64748b;margin-bottom:20px}
-.form-group{text-align:left;margin-bottom:14px}
-.form-group label{display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:4px}
-.form-group input{width:100%;padding:10px 14px;border-radius:10px;border:1px solid #cbd5e1;font-size:14px;background:#f8fafc}
-.form-group input:focus{outline:none;border-color:#0284c7;background:white}
-#basla-btn{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;padding:14px 32px;font-size:16px;font-weight:700;border-radius:12px;cursor:pointer;width:100%;margin-top:10px;box-shadow:0 10px 20px #2563eb4d}
-#basla-btn:hover{transform:translateY(-2px)}
-.error-msg{color:#dc2626;font-size:12px;font-weight:600;margin-top:8px;display:none}
-#top-header{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:10;background:#ffffffe6;backdrop-filter:blur(12px);padding:8px 24px;border-radius:30px;border:1px solid #ffffffe6;box-shadow:0 8px 20px #94a3b833;font-size:14px;font-weight:700;color:#0f172a;text-align:center;max-width:80%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#bottom-status-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;background:#fffffff2;backdrop-filter:blur(12px);padding:10px 24px;border-radius:20px;border:1px solid #cbd5cdd9;box-shadow:0 10px 25px #94a3b840;display:flex;align-items:center;gap:20px;font-size:14px;font-weight:600;color:#334155}
-#bitir-btn{background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:8px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
-#admin-login-btn{position:fixed;top:16px;right:20px;z-index:20;background:#fffffff2;border:1px solid #cbd5e1cc;color:#475569;padding:8px 14px;border-radius:12px;cursor:pointer;font-size:12px;font-weight:700}
-#panel{position:fixed;top:70px;left:-420px;z-index:15;background:#fffffff5;backdrop-filter:blur(14px);padding:20px;border-radius:18px;border:1px solid #cbd5e1cc;box-shadow:0 20px 30px #94a3b84d;width:380px;max-height:calc(100vh - 100px);overflow-y:auto;color:#0f172a;transition:left .35s cubic-bezier(.4,0,.2,1)}
-#panel.open{left:16px}
-table.results-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}
-table.results-table th,table.results-table td{padding:6px 8px;text-align:left;border-bottom:1px solid #e2e8f0}
-table.results-table th{background:#f1f5f9;color:#475569}
-.excel-dl-btn,.qr-btn{color:white;border:none;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:700;width:100%;cursor:pointer;margin-top:10px}
-.excel-dl-btn{background:linear-gradient(135deg,#10b981,#059669)}
-.qr-btn{background:linear-gradient(135deg,#0284c7,#0369a1)}
-#qr-modal{display:none;position:fixed;inset:0;background:#0f172ab3;backdrop-filter:blur(8px);z-index:2000;justify-content:center;align-items:center;padding:16px}
-.qr-card{background:white;padding:28px 24px;border-radius:20px;text-align:center;box-shadow:0 20px 40px #0000004d;max-width:360px;width:100%;position:relative}
-#qrcode-container{display:flex;justify-content:center;margin:16px 0}
-#qrcode-container img,#qrcode-container canvas{border-radius:12px;border:4px solid #f8fafc;max-width:100%;height:auto}
-.qr-close-btn{position:absolute;top:12px;right:16px;border:none;background:none;font-size:22px;cursor:pointer}
-.qr-dl-action-btn{background:#0f172a;color:white;border:none;padding:10px 16px;border-radius:10px;font-weight:700;font-size:12px;cursor:pointer;width:100%;margin-top:10px}
-#bildirim{display:none;position:fixed;top:75px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#10b981,#059669);color:white;padding:12px 28px;font-size:16px;font-weight:800;border-radius:14px;z-index:999;box-shadow:0 10px 25px #10b98166;text-align:center;max-width:calc(100vw - 24px)}
+model-viewer{width:100%;height:100%;position:absolute;inset:0;z-index:1}
+.hotspot{background:#ef4444;border:2px solid white;border-radius:50%;width:18px;height:18px;box-shadow:0 0 10px #ef4444;pointer-events:none}
+.hotspot.found{background:#10b981;box-shadow:0 0 12px #10b981}
+#giris-ekrani{position:fixed;inset:0;background:linear-gradient(135deg,#f8fafc,#cbd5e1);display:flex;justify-content:center;align-items:center;z-index:1000;padding:20px}
+.hero-card{background:#fffffff5;padding:30px;border-radius:22px;box-shadow:0 20px 40px #94a3b859;max-width:450px;width:100%;text-align:center}
+.hero-card h1{font-size:24px;color:#0f172a}
+.hero-card p{font-size:13px;color:#64748b}
+.form-group{text-align:left;margin-bottom:12px}
+.form-group label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+.form-group input{width:100%;padding:11px;border-radius:9px;border:1px solid #cbd5e1;font-size:15px}
+#basla-btn{background:#2563eb;color:white;border:0;padding:14px;border-radius:10px;font-size:16px;font-weight:700;width:100%;cursor:pointer}
+#top-header{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;background:#fffffff0;padding:10px 18px;border-radius:24px;font-size:13px;font-weight:700;white-space:nowrap}
+#admin-login-btn{position:fixed;top:12px;right:12px;z-index:20;background:white;border:1px solid #cbd5e1;padding:9px;border-radius:10px}
+#bottom-status-bar{position:fixed;bottom:15px;left:50%;transform:translateX(-50%);z-index:10;background:#fffffff2;padding:12px 16px;border-radius:16px;display:flex;align-items:center;gap:18px;white-space:nowrap}
+#bitir-btn{background:#10b981;color:white;border:0;padding:10px 14px;border-radius:9px;font-weight:700}
+#panel{position:fixed;top:65px;left:-420px;z-index:15;background:white;padding:18px;border-radius:14px;width:380px;max-width:calc(100% - 24px);max-height:calc(100% - 90px);overflow:auto;transition:left .3s}
+#panel.open{left:12px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+td,th{padding:6px;border-bottom:1px solid #e2e8f0;text-align:left}
+.panel-btn{width:100%;padding:10px;margin-top:8px;border:0;border-radius:8px;color:white;font-weight:700}
+#bildirim{display:none;position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#059669;color:white;padding:13px 20px;border-radius:12px;font-weight:800;z-index:999;text-align:center;max-width:90%}
+#qr-modal{display:none;position:fixed;inset:0;background:#0009;z-index:2000;justify-content:center;align-items:center}
+.qr-card{background:white;padding:25px;border-radius:18px;text-align:center;max-width:90%}
 @media(max-width:600px){
-.hero-card{padding:26px 22px}
-.hero-card h1{font-size:21px}
-#top-header{top:10px;left:10px;transform:none;max-width:calc(100% - 150px);font-size:11px;padding:8px 12px}
-#admin-login-btn{top:10px;right:10px;padding:8px 10px}
-#bottom-status-bar{bottom:10px;width:calc(100% - 20px);justify-content:space-between;gap:8px;padding:10px 12px;font-size:12px}
-#panel{width:calc(100% - 32px);left:calc(-100% - 20px)}
-#panel.open{left:16px}
+ .hero-card{padding:24px 18px}
+ .hero-card h1{font-size:21px}
+ #top-header{left:10px;transform:none;top:10px;font-size:11px;padding:9px;max-width:calc(100% - 145px);overflow:hidden}
+ #admin-login-btn{top:10px;right:8px;font-size:11px}
+ #bottom-status-bar{bottom:8px;width:calc(100% - 16px);justify-content:space-between;gap:8px;padding:10px;font-size:12px}
+ #panel{left:-110%;width:calc(100% - 24px)}
+ #panel.open{left:12px}
 }
 </style>
 </head>
-
 <body>
 
-<model-viewer
-    id="engine-viewer"
-    src="motor11-v1.glb"
-    alt="3D Motor Modeli"
-    camera-controls
-    disable-pan
-    shadow-intensity="1.5"
-    ar>
+<model-viewer id="engine-viewer" src="motor11-v1.glb" alt="3D Motor Modeli"
+ camera-controls shadow-intensity="1.5" touch-action="pan-y">
 </model-viewer>
 
 <div id="giris-ekrani">
-    <div class="hero-card">
-        <span class="badge">Kalite Kontrol Sınav Portalı</span>
-        <h1>3D Motor Muayene Sınavı</h1>
-        <p>Sınava başlamak için bilgilerinizi doldurun. Her arıza 10 puan, başarı barajı 70 puan.</p>
-
-        <form id="kayit-form">
-            <div class="form-group">
-                <label for="input-ad">Adınız</label>
-                <input type="text" id="input-ad" placeholder="Örn: Ahmet" required>
-            </div>
-            <div class="form-group">
-                <label for="input-soyad">Soyadınız</label>
-                <input type="text" id="input-soyad" placeholder="Örn: Yılmaz" required>
-            </div>
-            <div class="form-group">
-                <label for="input-bolum">Bölüm / Departman</label>
-                <input type="text" id="input-bolum" placeholder="Örn: Kalite Güvence" required>
-            </div>
-            <div class="form-group">
-                <label for="input-sicil">Sicil No</label>
-                <input type="text" id="input-sicil" placeholder="Örn: S12345" required>
-            </div>
-            <div id="form-error" class="error-msg">Bu sicil numarası ile daha önce sınava girilmiş!</div>
-            <button type="submit" id="basla-btn">Sınavı Başlat 🚀</button>
-        </form>
-    </div>
+ <div class="hero-card">
+  <h1>3D Motor Muayene Sınavı</h1>
+  <p>Sınava başlamak için bilgilerinizi doldurun. Her arıza 10 puan.</p>
+  <form id="kayit-form">
+   <div class="form-group"><label for="input-ad">Adınız</label><input id="input-ad" required></div>
+   <div class="form-group"><label for="input-soyad">Soyadınız</label><input id="input-soyad" required></div>
+   <div class="form-group"><label for="input-bolum">Bölüm / Departman</label><input id="input-bolum" required></div>
+   <div class="form-group"><label for="input-sicil">Sicil No</label><input id="input-sicil" required></div>
+   <div id="form-error" style="display:none;color:#dc2626;font-size:12px;margin:8px">Bu sicil numarasıyla daha önce sınava girilmiş.</div>
+   <button type="submit" id="basla-btn">Sınavı Başlat 🚀</button>
+  </form>
+ </div>
 </div>
 
 <div id="top-header">🔍 3D Motor Kalite Kontrol Sınavı</div>
-<button id="admin-login-btn">🔒 Yönetici Girişi</button>
-
+<button id="admin-login-btn">🔒 Yönetici</button>
 <div id="bottom-status-bar">
-    <span>Arıza Tespiti: <b id="progress-text" style="color:#0284c7">0 / 10</b></span>
-    <button id="bitir-btn">Sınavı Bitir 🏁</button>
+ <span>Arıza: <b id="progress-text">0 / 10</b></span>
+ <button id="bitir-btn">Sınavı Bitir 🏁</button>
 </div>
 
 <div id="panel">
-    <h3>📊 Kayıtlı Sınav Sonuçları</h3>
-    <p style="font-size:11px;color:#64748b;margin-top:-6px">Yönetici paneli - Katılımcı skor tablosu:</p>
-
-    <div style="max-height:160px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px">
-        <table class="results-table">
-            <thead>
-                <tr>
-                    <th>Sicil</th><th>Ad Soyad</th><th>Bölüm</th><th>Puan</th><th>Durum</th>
-                </tr>
-            </thead>
-            <tbody id="results-tbody"></tbody>
-        </table>
-    </div>
-
-    <button class="excel-dl-btn" id="excel-export-btn">📊 Tüm Sonuçları Excel (CSV) İndir</button>
-    <button class="qr-btn" id="qr-generate-btn">📱 Sınav Linki Karekodu Oluştur</button>
-    <small id="status" style="color:#10b981;font-size:11px;display:block;margin-top:12px;text-align:center">⏳ 3D model yükleniyor...</small>
+ <h3>Kayıtlı Sınav Sonuçları</h3>
+ <table><thead><tr><th>Sicil</th><th>Ad Soyad</th><th>Bölüm</th><th>Puan</th><th>Durum</th></tr></thead><tbody id="results-tbody"></tbody></table>
+ <button class="panel-btn" style="background:#059669" id="excel-export-btn">Sonuçları CSV İndir</button>
+ <button class="panel-btn" style="background:#0284c7" id="qr-generate-btn">Sınav QR Kodu Oluştur</button>
+ <div id="status" style="font-size:11px;margin-top:10px"></div>
 </div>
 
 <div id="qr-modal">
-    <div class="qr-card">
-        <button class="qr-close-btn" id="qr-close-btn" aria-label="Kapat">&times;</button>
-        <h3 style="margin:0 0 6px;color:#0f172a;font-size:16px">📱 Mobil Katılım Karekodu</h3>
-        <p style="font-size:12px;color:#64748b">Personeller telefon kamerasından okutarak sınava katılabilir.</p>
-        <div id="qrcode-container"></div>
-        <span id="qr-link-text" style="font-size:10px;color:#94a3b8;word-break:break-all;display:block"></span>
-        <button class="qr-dl-action-btn" id="qr-download-btn">💾 Karekod PNG İndir</button>
-    </div>
+ <div class="qr-card">
+  <button id="qr-close-btn">Kapat ✕</button>
+  <h3>Sınav QR Kodu</h3>
+  <div id="qrcode-container"></div>
+  <div id="qr-link-text" style="font-size:10px;word-break:break-all"></div>
+  <button id="qr-download-btn">QR Kodu İndir</button>
+ </div>
 </div>
-
-<div id="bildirim" role="status" aria-live="polite">⚠️ Arıza Bulundu! (+10 Puan)</div>
+<div id="bildirim" role="status" aria-live="polite"></div>
 
 <script>
-let aktifKullanici = null;
-let hotspotCounter = 0;
-let bildirimTimer = null;
-
+const viewer = document.getElementById('engine-viewer');
 const TOPLAM_ARIZA = 10;
 const ARIZA_PUANI = 10;
 const BASARI_BARAJI = 70;
 
+let aktifKullanici = null;
+let hotspotCounter = 0;
+let touchStart = null;
+let isHandlingFaultTap = false;
 let testKayitlari = [];
 
 try {
-    testKayitlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
-    if (!Array.isArray(testKayitlari)) testKayitlari = [];
-} catch (error) {
-    testKayitlari = [];
-}
+ testKayitlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
+ if (!Array.isArray(testKayitlari)) testKayitlari = [];
+} catch(e) { testKayitlari = []; }
 
-const viewer = document.getElementById('engine-viewer');
-
-// Şimdilik 9 koordinat tanımlı.
 const hataliBolgeler = [
-    { id: 1, x:  0.314, y: 0.268, z: -0.093, tolerans: 0.04, bulunan: false },
-    { id: 2, x:  0.315, y: 0.175, z: -0.033, tolerans: 0.04, bulunan: false },
-    { id: 3, x:  0.313, y: 0.243, z:  0.072, tolerans: 0.04, bulunan: false },
-    { id: 4, x: -0.371, y: 0.803, z: -0.087, tolerans: 0.04, bulunan: false },
-    { id: 5, x:  0.314, y: 0.332, z: -0.042, tolerans: 0.04, bulunan: false },
-    { id: 6, x: -0.267, y: 0.871, z:  0.081, tolerans: 0.04, bulunan: false },
-    { id: 7, x: -0.352, y: 0.738, z:  0.312, tolerans: 0.04, bulunan: false },
-    { id: 8, x: -0.375, y: 0.801, z: -0.094, tolerans: 0.04, bulunan: false },
-    { id: 9, x: -0.373, y: 0.794, z:  0.074, tolerans: 0.04, bulunan: false }
+ {id:1,x:0.314,y:0.268,z:-0.093,bulundu:false},
+ {id:2,x:0.315,y:0.175,z:-0.033,bulundu:false},
+ {id:3,x:0.313,y:0.243,z:0.072,bulundu:false},
+ {id:4,x:-0.371,y:0.803,z:-0.087,bulundu:false},
+ {id:5,x:0.314,y:0.332,z:-0.042,bulundu:false},
+ {id:6,x:-0.267,y:0.871,z:0.081,bulundu:false},
+ {id:7,x:-0.352,y:0.738,z:0.312,bulundu:false},
+ {id:8,x:-0.375,y:0.801,z:-0.094,bulundu:false},
+ {id:9,x:-0.373,y:0.794,z:0.074,bulundu:false}
 ];
 
-function ilerlemeyiGuncelle() {
-    const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-    document.getElementById('progress-text').textContent =
-        `${bulunanSayisi} / ${TOPLAM_ARIZA}`;
+function ilerlemeyiGuncelle(){
+ const sayi=hataliBolgeler.filter(h=>h.bulundu).length;
+ document.getElementById('progress-text').textContent=`${sayi} / ${TOPLAM_ARIZA}`;
 }
 
-function bildirimGoster(metin) {
-    const bildirim = document.getElementById('bildirim');
-    bildirim.textContent = metin;
-    bildirim.style.display = 'block';
-
-    if (bildirimTimer) clearTimeout(bildirimTimer);
-
-    bildirimTimer = setTimeout(() => {
-        bildirim.style.display = 'none';
-    }, 1800);
+let bildirimTimer;
+function bildirimGoster(metin){
+ const el=document.getElementById('bildirim');
+ el.textContent=metin;
+ el.style.display='block';
+ clearTimeout(bildirimTimer);
+ bildirimTimer=setTimeout(()=>el.style.display='none',1800);
 }
 
-// Katılımcı kayıt formu
-document.getElementById('kayit-form').addEventListener('submit', (e) => {
-    e.preventDefault();
+document.getElementById('kayit-form').addEventListener('submit',e=>{
+ e.preventDefault();
+ const sicil=document.getElementById('input-sicil').value.trim();
+ const varMi=testKayitlari.some(k=>String(k.sicil).toLowerCase()===sicil.toLowerCase());
+ if(varMi){document.getElementById('form-error').style.display='block';return;}
+ document.getElementById('form-error').style.display='none';
 
-    const sicilInput = document.getElementById('input-sicil').value.trim();
-    const errorMsg = document.getElementById('form-error');
+ aktifKullanici={
+  ad:document.getElementById('input-ad').value.trim(),
+  soyad:document.getElementById('input-soyad').value.trim(),
+  bolum:document.getElementById('input-bolum').value.trim(),
+  sicil,puan:0,durum:'BAŞARISIZ',
+  tarih:new Date().toLocaleString('tr-TR')
+ };
 
-    const dahaOnceGirmis = testKayitlari.some(k =>
-        String(k.sicil).toLocaleLowerCase('tr-TR') ===
-        sicilInput.toLocaleLowerCase('tr-TR')
-    );
-
-    if (dahaOnceGirmis) {
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    errorMsg.style.display = 'none';
-
-    aktifKullanici = {
-        ad: document.getElementById('input-ad').value.trim(),
-        soyad: document.getElementById('input-soyad').value.trim(),
-        bolum: document.getElementById('input-bolum').value.trim(),
-        sicil: sicilInput,
-        puan: 0,
-        durum: 'BAŞARISIZ',
-        tarih: new Date().toLocaleString('tr-TR')
-    };
-
-    hataliBolgeler.forEach(hata => hata.bulunan = false);
-    document.querySelectorAll('.hotspot').forEach(el => el.remove());
-
-    hotspotCounter = 0;
-    ilerlemeyiGuncelle();
-
-    const girisEkrani = document.getElementById('giris-ekrani');
-    girisEkrani.style.opacity = '0';
-
-    setTimeout(() => {
-        girisEkrani.style.visibility = 'hidden';
-    }, 500);
+ hataliBolgeler.forEach(h=>h.bulundu=false);
+ document.querySelectorAll('.hotspot').forEach(el=>el.remove());
+ hotspotCounter=0;
+ ilerlemeyiGuncelle();
+ document.getElementById('giris-ekrani').style.display='none';
 });
 
-// Mobil ve masaüstü için ortak dokunma sistemi.
-let touchStart = null;
-let isHandlingFaultTap = false;
+// Dokunma konumunu doğrudan viewer alanı içinde hesaplar.
+const TIKLAMA_YARICAPI = 38;
 
-// Sabit piksel alanı: yakınlaştırma seviyesinden bağımsız.
-const ARIZA_TIKLAMA_YARICAPI = 30;
+function ekranaYansit(hata){
+ const rect=viewer.getBoundingClientRect();
+ const canvas=viewer.shadowRoot?.querySelector('canvas');
+ if(!canvas) return null;
 
-async function handleFaultTap(screenX, screenY) {
-    if (!aktifKullanici || isHandlingFaultTap) return;
-
-    if (typeof viewer.toScreenCoordinates !== 'function') {
-        console.error('Bu model-viewer sürümü toScreenCoordinates metodunu desteklemiyor.');
-        return;
-    }
-
-    let enYakinAriza = null;
-    let enKucukMesafe = Infinity;
-
-    for (const hata of hataliBolgeler) {
-        if (hata.bulunan) continue;
-
-        try {
-            const nokta = viewer.toScreenCoordinates({
-                x: hata.x,
-                y: hata.y,
-                z: hata.z
-            });
-
-            if (!nokta ||
-                !Number.isFinite(nokta.x) ||
-                !Number.isFinite(nokta.y)) continue;
-
-            const dx = screenX - nokta.x;
-            const dy = screenY - nokta.y;
-            const mesafe = Math.sqrt(dx * dx + dy * dy);
-
-            if (mesafe <= ARIZA_TIKLAMA_YARICAPI && mesafe < enKucukMesafe) {
-                enYakinAriza = hata;
-                enKucukMesafe = mesafe;
-            }
-        } catch (error) {
-            console.warn('Arıza noktası ekrana yansıtılamadı:', error);
-        }
-    }
-
-    if (!enYakinAriza) {
-        bildirimGoster('Bu noktada tanımlı bir arıza yok.');
-        return;
-    }
-
-    isHandlingFaultTap = true;
-
-    try {
-        enYakinAriza.bulunan = true;
-        hotspotCounter++;
-
-        const hotspotEl = document.createElement('div');
-        hotspotEl.slot = `click-marker-${hotspotCounter}`;
-        hotspotEl.className = 'hotspot found';
-        hotspotEl.dataset.position =
-            `${enYakinAriza.x} ${enYakinAriza.y} ${enYakinAriza.z}`;
-
-        viewer.appendChild(hotspotEl);
-
-        bildirimGoster('⚠️ Arıza Bulundu! (+10 Puan)');
-        ilerlemeyiGuncelle();
-    } finally {
-        isHandlingFaultTap = false;
-    }
+ // model-viewer'ın gerçek kamera projeksiyonunu kullan.
+ try {
+  const p=viewer.toScreenCoordinates({x:hata.x,y:hata.y,z:hata.z});
+  if(p && Number.isFinite(p.x) && Number.isFinite(p.y)){
+   // toScreenCoordinates bazı sürümlerde canvas koordinatı döndürebilir.
+   const cr=canvas.getBoundingClientRect();
+   const sx=p.x*(cr.width/(canvas.width||cr.width));
+   const sy=p.y*(cr.height/(canvas.height||cr.height));
+   return {x:cr.left-rect.left+sx,y:cr.top-rect.top+sy};
+  }
+ } catch(e) {}
+ return null;
 }
 
-function pointerBaslat(event) {
-    if (!aktifKullanici) return;
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
+async function handleFaultTap(clientX,clientY){
+ if(!aktifKullanici || isHandlingFaultTap) return;
+ isHandlingFaultTap=true;
 
-    touchStart = {
-        x: event.clientX,
-        y: event.clientY,
-        time: Date.now(),
-        pointerId: event.pointerId
-    };
+ try{
+  const rect=viewer.getBoundingClientRect();
+  const tapX=clientX-rect.left;
+  const tapY=clientY-rect.top;
+  let enYakin=null;
+  let enKucuk=Infinity;
+
+  for(const hata of hataliBolgeler){
+   if(hata.bulundu) continue;
+   const p=ekranaYansit(hata);
+   if(!p) continue;
+
+   const d=Math.hypot(tapX-p.x,tapY-p.y);
+   if(d<TIKLAMA_YARICAPI && d<enKucuk){
+    enYakin=hata;
+    enKucuk=d;
+   }
+  }
+
+  if(!enYakin){
+   bildirimGoster('Bu noktada arıza bulunamadı.');
+   return;
+  }
+
+  enYakin.bulundu=true;
+  hotspotCounter++;
+
+  const marker=document.createElement('div');
+  marker.slot=`hotspot-${hotspotCounter}`;
+  marker.className='hotspot found';
+  marker.setAttribute('data-position',`${enYakin.x}m ${enYakin.y}m ${enYakin.z}m`);
+  marker.setAttribute('data-normal','0m 1m 0m');
+  viewer.appendChild(marker);
+
+  bildirimGoster('⚠️ Arıza Bulundu! (+10 Puan)');
+  ilerlemeyiGuncelle();
+ } finally {
+  isHandlingFaultTap=false;
+ }
 }
 
-async function pointerBitir(event) {
-    if (!touchStart || touchStart.pointerId !== event.pointerId) {
-        touchStart = null;
-        return;
-    }
+// pointer olayları dokunma ve fare için kullanılır.
+viewer.addEventListener('pointerdown',e=>{
+ if(!aktifKullanici) return;
+ if(e.pointerType==='mouse' && e.button!==0) return;
+ touchStart={x:e.clientX,y:e.clientY,time:Date.now(),id:e.pointerId};
+},{passive:true});
 
-    const start = touchStart;
-    touchStart = null;
+viewer.addEventListener('pointerup',e=>{
+ if(!touchStart || touchStart.id!==e.pointerId){touchStart=null;return;}
+ const s=touchStart;
+ touchStart=null;
+ const hareket=Math.hypot(e.clientX-s.x,e.clientY-s.y);
+ if(hareket>18 || Date.now()-s.time>1500) return;
+ handleFaultTap(e.clientX,e.clientY);
+},{passive:true});
 
-    const dx = event.clientX - start.x;
-    const dy = event.clientY - start.y;
-    const hareket = Math.sqrt(dx * dx + dy * dy);
+viewer.addEventListener('pointercancel',()=>touchStart=null);
 
-    // Modeli döndürme/sürükleme hareketlerini tıklama sayma.
-    if (hareket > 12 || Date.now() - start.time > 1000) return;
-    if (!aktifKullanici) return;
+document.getElementById('bitir-btn').addEventListener('click',()=>{
+ if(!aktifKullanici){alert('Önce sınavı başlatın.');return;}
+ const sayi=hataliBolgeler.filter(h=>h.bulundu).length;
+ aktifKullanici.puan=sayi*ARIZA_PUANI;
+ aktifKullanici.durum=aktifKullanici.puan>=BASARI_BARAJI?'BAŞARILI':'BAŞARISIZ';
+ testKayitlari.push({...aktifKullanici});
+ try{localStorage.setItem('engine_test_results',JSON.stringify(testKayitlari));}catch(e){}
+ tabloyuCiz();
+ alert(`Sınav tamamlandı!\nBulunan arıza: ${sayi}\nPuan: ${aktifKullanici.puan}\nDurum: ${aktifKullanici.durum}`);
+ location.reload();
+});
 
-    const rect = viewer.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+document.getElementById('admin-login-btn').addEventListener('click',()=>{
+ if(prompt('Yönetici şifresi:')==='admin2026'){
+  document.getElementById('panel').classList.toggle('open');
+ }else alert('Hatalı şifre!');
+});
 
-    await handleFaultTap(x, y);
+function tabloyuCiz(){
+ const tbody=document.getElementById('results-tbody');
+ tbody.innerHTML='';
+ testKayitlari.forEach(k=>{
+  const tr=document.createElement('tr');
+  [k.sicil,`${k.ad} ${k.soyad}`,k.bolum,k.puan,k.durum].forEach((v,i)=>{
+   const td=document.createElement('td');
+   td.textContent=v??'';
+   if(i===4)td.style.color=k.puan>=BASARI_BARAJI?'#15803d':'#b91c1c';
+   tr.appendChild(td);
+  });
+  tbody.appendChild(tr);
+ });
 }
 
-viewer.addEventListener('pointerdown', pointerBaslat, { passive: true });
-viewer.addEventListener('pointerup', pointerBitir, { passive: true });
-
-viewer.addEventListener('pointercancel', () => {
-    touchStart = null;
+document.getElementById('excel-export-btn').addEventListener('click',()=>{
+ if(!testKayitlari.length){alert('Kayıt yok.');return;}
+ const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ let csv='\uFEFFSicil;Ad;Soyad;Bölüm;Puan;Durum;Tarih\n';
+ testKayitlari.forEach(k=>{
+  csv+=[k.sicil,k.ad,k.soyad,k.bolum,k.puan,k.durum,k.tarih].map(esc).join(';')+'\n';
+ });
+ const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+ const a=document.createElement('a');
+ a.href=url;a.download='Sinav_Sonuclari.csv';a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 
-// Sınavı bitir ve sonucu kaydet
-document.getElementById('bitir-btn').addEventListener('click', () => {
-    if (!aktifKullanici) {
-        alert('Lütfen önce bilgilerinizi girip sınavı başlatın!');
-        return;
-    }
-
-    const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-
-    aktifKullanici.puan = bulunanSayisi * ARIZA_PUANI;
-    aktifKullanici.durum =
-        aktifKullanici.puan >= BASARI_BARAJI ? 'BAŞARILI' : 'BAŞARISIZ';
-
-    testKayitlari.push({ ...aktifKullanici });
-
-    try {
-        localStorage.setItem('engine_test_results', JSON.stringify(testKayitlari));
-    } catch (err) {
-        alert('Sonuç tarayıcıya kaydedilemedi.');
-    }
-
-    tabloyuCiz();
-
-    alert(
-        `Sınavınız Tamamlandı!\n` +
-        `Bulunan Arıza: ${bulunanSayisi} / ${TOPLAM_ARIZA}\n` +
-        `Toplam Puanınız: ${aktifKullanici.puan} / ${TOPLAM_ARIZA * ARIZA_PUANI}\n` +
-        `Durum: ${aktifKullanici.durum}`
-    );
-
-    location.reload();
+document.getElementById('qr-generate-btn').addEventListener('click',()=>{
+ if(typeof QRCode==='undefined'){alert('QR kütüphanesi yüklenemedi.');return;}
+ const box=document.getElementById('qrcode-container');
+ box.innerHTML='';
+ new QRCode(box,{text:location.href,width:180,height:180});
+ document.getElementById('qr-link-text').textContent=location.href;
+ document.getElementById('qr-modal').style.display='flex';
+});
+document.getElementById('qr-close-btn').addEventListener('click',()=>document.getElementById('qr-modal').style.display='none');
+document.getElementById('qr-download-btn').addEventListener('click',()=>{
+ const box=document.getElementById('qrcode-container');
+ const img=box.querySelector('img');
+ const canvas=box.querySelector('canvas');
+ const url=img?.src||(canvas?canvas.toDataURL('image/png'):null);
+ if(!url){alert('Önce QR kodu oluşturun.');return;}
+ const a=document.createElement('a');a.href=url;a.download='Sinav_QR.png';a.click();
 });
 
-// Yönetici girişi
-document.getElementById('admin-login-btn').addEventListener('click', () => {
-    if (prompt('Yönetici şifresini giriniz:') === 'admin2026') {
-        document.getElementById('panel').classList.toggle('open');
-    } else {
-        alert('Hatalı şifre!');
-    }
-});
-
-// Karekod oluştur
-document.getElementById('qr-generate-btn').addEventListener('click', () => {
-    if (typeof QRCode === 'undefined') {
-        alert('Karekod kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.');
-        return;
-    }
-
-    const currentUrl = window.location.href;
-    const qrContainer = document.getElementById('qrcode-container');
-    qrContainer.innerHTML = '';
-
-    new QRCode(qrContainer, {
-        text: currentUrl,
-        width: 180,
-        height: 180,
-        colorDark: '#0f172a',
-        colorLight: '#ffffff'
-    });
-
-    document.getElementById('qr-link-text').textContent = currentUrl;
-    document.getElementById('qr-modal').style.display = 'flex';
-});
-
-document.getElementById('qr-close-btn').addEventListener('click', () => {
-    document.getElementById('qr-modal').style.display = 'none';
-});
-
-document.getElementById('qr-modal').addEventListener('click', (event) => {
-    if (event.target.id === 'qr-modal') {
-        document.getElementById('qr-modal').style.display = 'none';
-    }
-});
-
-// Karekod PNG indir
-document.getElementById('qr-download-btn').addEventListener('click', () => {
-    const container = document.getElementById('qrcode-container');
-    const qrImg = container.querySelector('img');
-    const qrCanvas = container.querySelector('canvas');
-
-    const dataUrl = qrImg?.src ||
-        (qrCanvas ? qrCanvas.toDataURL('image/png') : null);
-
-    if (!dataUrl) {
-        alert('Önce karekod oluşturun.');
-        return;
-    }
-
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = 'Sinav_Erisim_Karekod.png';
-    link.click();
-});
-
-// Yönetici sonuç tablosu
-function tabloyuCiz() {
-    const tbody = document.getElementById('results-tbody');
-    tbody.innerHTML = '';
-
-    testKayitlari.forEach(k => {
-        const tr = document.createElement('tr');
-        const values = [k.sicil, `${k.ad} ${k.soyad}`, k.bolum, k.puan, k.durum];
-
-        values.forEach((value, index) => {
-            const td = document.createElement('td');
-
-            if (index === 3) {
-                const strong = document.createElement('b');
-                strong.textContent = value ?? '';
-                td.appendChild(strong);
-            } else {
-                td.textContent = value ?? '';
-            }
-
-            if (index === 4) {
-                td.style.color =
-                    k.puan >= BASARI_BARAJI ? '#15803d' : '#b91c1c';
-            }
-
-            tr.appendChild(td);
-        });
-
-        tbody.appendChild(tr);
-    });
-}
-
-// Sonuçları CSV olarak indir
-document.getElementById('excel-export-btn').addEventListener('click', () => {
-    if (testKayitlari.length === 0) {
-        alert('Kayıt yok.');
-        return;
-    }
-
-    const csvEscape = value =>
-        `"${String(value ?? '').replace(/"/g, '""')}"`;
-
-    let csv = '\uFEFFSicil No;Ad;Soyad;Bölüm;Puan;Durum;Tarih\n';
-
-    testKayitlari.forEach(k => {
-        csv += [
-            k.sicil, k.ad, k.soyad, k.bolum, k.puan, k.durum, k.tarih
-        ].map(csvEscape).join(';') + '\n';
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-
-    link.href = url;
-    link.download = 'Sinav_Sonuclari.csv';
-    link.click();
-
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-});
-
-viewer.addEventListener('load', () => {
-    document.getElementById('status').textContent =
-        '✅ motor11-v1.glb başarıyla yüklendi';
-});
-
-viewer.addEventListener('error', () => {
-    const status = document.getElementById('status');
-    status.textContent =
-        '❌ Model yüklenemedi. motor11-v1.glb dosyasını kontrol edin.';
-    status.style.color = '#dc2626';
-});
-
+viewer.addEventListener('load',()=>document.getElementById('status').textContent='3D model yüklendi.');
+viewer.addEventListener('error',()=>document.getElementById('status').textContent='Model yüklenemedi. motor11-v1.glb dosyasını kontrol edin.');
 tabloyuCiz();
 ilerlemeyiGuncelle();
 </script>
-
 </body>
 </html>
