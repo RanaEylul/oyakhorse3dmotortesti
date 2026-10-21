@@ -167,12 +167,13 @@
 </head>
 <body>
 
-    <!-- DOĞRUDAN YÜKLENEN 3D MOTOR MODELİ -->
+    <!-- DOĞRUDAN YÜKLENEN 3D MOTOR MODELİ (disable-pan eklendi) -->
     <model-viewer 
         id="engine-viewer"
         src="motor11-v1.glb" 
         alt="3D Motor Modeli" 
         camera-controls 
+        disable-pan
         shadow-intensity="1.5"
         ar>
     </model-viewer>
@@ -262,18 +263,18 @@
         let aktifKullanici = null;
         let testKayıtlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
 
-        // GÖNDERDİĞİNİZ 10 ÖZEL ARIZA KOORDİNATI (Tolerans ile birlikte)
+        // GENİŞLETİLMİŞ TIKLAMA SINIRI (tolerans: 0.45)
         const hataliBolgeler = [
-            { x: -0.3720, y:  0.3133, z: -0.0922, tolerans: 0.25, bulunan: false },
-            { x: -0.3643, y:  0.3078, z:  0.0674, tolerans: 0.25, bulunan: false },
-            { x: -0.3636, y:  0.2752, z:  0.3117, tolerans: 0.25, bulunan: false },
-            { x: -0.2780, y:  0.3844, z:  0.0566, tolerans: 0.25, bulunan: false },
-            { x:  0.2632, y: -0.0268, z: -0.1404, tolerans: 0.25, bulunan: false },
-            { x:  0.3261, y: -0.1463, z: -0.0055, tolerans: 0.25, bulunan: false },
-            { x:  0.3117, y: -0.1561, z: -0.0408, tolerans: 0.25, bulunan: false },
-            { x:  0.3144, y: -0.2182, z: -0.0956, tolerans: 0.25, bulunan: false },
-            { x:  0.3209, y: -0.3118, z: -0.0287, tolerans: 0.25, bulunan: false },
-            { x:  0.3208, y: -0.2416, z:  0.0737, tolerans: 0.25, bulunan: false }
+            { x: -0.3720, y:  0.3133, z: -0.0922, tolerans: 0.45, bulunan: false },
+            { x: -0.3643, y:  0.3078, z:  0.0674, tolerans: 0.45, bulunan: false },
+            { x: -0.3636, y:  0.2752, z:  0.3117, tolerans: 0.45, bulunan: false },
+            { x: -0.2780, y:  0.3844, z:  0.0566, tolerans: 0.45, bulunan: false },
+            { x:  0.2632, y: -0.0268, z: -0.1404, tolerans: 0.45, bulunan: false },
+            { x:  0.3261, y: -0.1463, z: -0.0055, tolerans: 0.45, bulunan: false },
+            { x:  0.3117, y: -0.1561, z: -0.0408, tolerans: 0.45, bulunan: false },
+            { x:  0.3144, y: -0.2182, z: -0.0956, tolerans: 0.45, bulunan: false },
+            { x:  0.3209, y: -0.3118, z: -0.0287, tolerans: 0.45, bulunan: false },
+            { x:  0.3208, y: -0.2416, z:  0.0737, tolerans: 0.45, bulunan: false }
         ];
 
         // Form Gönderim & Sınavı Başlatma
