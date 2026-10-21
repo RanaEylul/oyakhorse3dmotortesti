@@ -167,12 +167,11 @@
 </head>
 <body>
 
-    <!-- DOĞRUDAN YÜKLENEN 3D MOTOR MODELİ (motor11-v1.glb) -->
+    <!-- DOĞRUDAN YÜKLENEN 3D MOTOR MODELİ -->
     <model-viewer 
         id="engine-viewer"
         src="motor11-v1.glb" 
         alt="3D Motor Modeli" 
-        auto-rotate 
         camera-controls 
         shadow-intensity="1.5"
         ar>
@@ -262,7 +261,20 @@
     <script>
         let aktifKullanici = null;
         let testKayıtlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
-        let bulunanArizaSayisi = 0;
+
+        // GÖNDERDİĞİNİZ 10 ÖZEL ARIZA KOORDİNATI (Tolerans ile birlikte)
+        const hataliBolgeler = [
+            { x: -0.3720, y:  0.3133, z: -0.0922, tolerans: 0.25, bulunan: false },
+            { x: -0.3643, y:  0.3078, z:  0.0674, tolerans: 0.25, bulunan: false },
+            { x: -0.3636, y:  0.2752, z:  0.3117, tolerans: 0.25, bulunan: false },
+            { x: -0.2780, y:  0.3844, z:  0.0566, tolerans: 0.25, bulunan: false },
+            { x:  0.2632, y: -0.0268, z: -0.1404, tolerans: 0.25, bulunan: false },
+            { x:  0.3261, y: -0.1463, z: -0.0055, tolerans: 0.25, bulunan: false },
+            { x:  0.3117, y: -0.1561, z: -0.0408, tolerans: 0.25, bulunan: false },
+            { x:  0.3144, y: -0.2182, z: -0.0956, tolerans: 0.25, bulunan: false },
+            { x:  0.3209, y: -0.3118, z: -0.0287, tolerans: 0.25, bulunan: false },
+            { x:  0.3208, y: -0.2416, z:  0.0737, tolerans: 0.25, bulunan: false }
+        ];
 
         // Form Gönderim & Sınavı Başlatma
         document.getElementById('kayit-form').addEventListener('submit', (e) => {
@@ -293,18 +305,38 @@
             }, 500);
         });
 
-        // 3D Model Üzerinde Tıklama ile Arıza Tespiti
+        // KOORDİNAT BAZLI TIKLAMA KONTROLÜ
         const viewer = document.getElementById('engine-viewer');
-        viewer.addEventListener('click', () => {
+        viewer.addEventListener('click', (event) => {
             if (!aktifKullanici) return;
 
-            if (bulunanArizaSayisi < 10) {
-                bulunanArizaSayisi++;
-                document.getElementById('progress-text').innerText = `${bulunanArizaSayisi} / 10`;
-                
-                const bildirim = document.getElementById('bildirim');
-                bildirim.style.display = 'block';
-                setTimeout(() => bildirim.style.display = 'none', 2000);
+            const hit = viewer.positionAndNormalFromPoint(event.clientX, event.clientY);
+            
+            if (hit && hit.position) {
+                const px = hit.position.x;
+                const py = hit.position.y;
+                const pz = hit.position.z;
+
+                for (let hata of hataliBolgeler) {
+                    const mesafe = Math.sqrt(
+                        Math.pow(px - hata.x, 2) +
+                        Math.pow(py - hata.y, 2) +
+                        Math.pow(pz - hata.z, 2)
+                    );
+
+                    if (mesafe <= hata.tolerans) {
+                        if (!hata.bulunan) {
+                            hata.bulunan = true;
+                            const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
+                            document.getElementById('progress-text').innerText = `${bulunanSayisi} / 10`;
+
+                            const bildirim = document.getElementById('bildirim');
+                            bildirim.style.display = 'block';
+                            setTimeout(() => bildirim.style.display = 'none', 2000);
+                        }
+                        break;
+                    }
+                }
             }
         });
 
@@ -315,7 +347,8 @@
                 return;
             }
 
-            aktifKullanici.puan = bulunanArizaSayisi * 10;
+            const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
+            aktifKullanici.puan = bulunanSayisi * 10;
             aktifKullanici.durum = aktifKullanici.puan >= 70 ? 'BAŞARILI' : 'BAŞARISIZ';
 
             testKayıtlari.push(aktifKullanici);
