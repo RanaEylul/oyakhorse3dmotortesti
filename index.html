@@ -23,7 +23,7 @@
             --poster-color: transparent;
         }
 
-        /* EKRANDA CANLI KOORDİNAT & DURUM GÖSTERİCİ (SAĞ ÜST) */
+        /* EKRANDA CANLI KOORDİNAT & DEBUG GÖSTERİCİ (SAĞ ÜST) */
         #coord-display {
             position: fixed;
             top: 65px;
@@ -80,7 +80,14 @@
         }
 
         .hero-card h1 { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 10px 0; }
-        .hero-card p { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+        .hero-card p { font-size: 13px; color: #64748b; margin-bottom: 10px; }
+
+        /* CANLI KOORDİNAT EKLEME SAYAÇ ETİKETİ */
+        .coord-counter-badge {
+            background: #dcfce7; color: #15803d; border: 1px solid #86efac;
+            font-size: 13px; font-weight: 800; padding: 8px 16px; border-radius: 12px;
+            display: inline-block; margin-bottom: 16px;
+        }
 
         .form-group { text-align: left; margin-bottom: 14px; }
         .form-group label { display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px; }
@@ -227,7 +234,10 @@
         <div class="hero-card">
             <span class="badge">Kalite Kontrol Sınav Portalı</span>
             <h1>3D Motor Muayene Sınavı</h1>
-            <p>Sınava başlamak için bilgilerinizi doldurun. (Her Soru: 10 Puan, Baraj: 70 Puan)</p>
+            <p>Sınava başlamak için bilgilerinizi doldurun.</p>
+            
+            <!-- EKLEME DURUMUNU GÖSTEREN BİLGİ ETİKETİ -->
+            <div class="coord-counter-badge">✅ Koordinat eklendi: 1</div>
             
             <form id="kayit-form">
                 <div class="form-group">
@@ -260,7 +270,7 @@
 
     <!-- ALT BİLGİ & SINAVI BİTİR BUTONU -->
     <div id="bottom-status-bar">
-        <span>Arıza Tespiti: <b id="progress-text" style="color:#0284c7">0 / 10</b></span>
+        <span>Arıza Tespiti: <b id="progress-text" style="color:#0284c7">0 / 1</b></span>
         <button id="bitir-btn">Sınavı Bitir 🏁</button>
     </div>
 
@@ -301,7 +311,7 @@
         </div>
     </div>
 
-    <div id="bildirim">⚠️ Arıza Bulundu! (+10 Puan)</div>
+    <div id="bildirim">⚠️ Arıza Bulundu!</div>
 
     <script>
         let aktifKullanici = null;
@@ -311,18 +321,9 @@
 
         const viewer = document.getElementById('engine-viewer');
 
-        // 10 ADET NET ARIZA KOORDİNATI (Geniş Tolerans: 1.2 - Kesin Yakalama)
+        // KOORDİNAT LİSTESİ (Sırayla ekleniyor)
         const hataliBolgeler = [
-            { id: 1,  x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 1.2, bulunan: false },
-            { id: 2,  x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 1.2, bulunan: false },
-            { id: 3,  x:  0.3152, y:  0.1784, z: -0.0339, tolerans: 1.2, bulunan: false },
-            { id: 4,  x:  0.3132, y:  0.2436, z:  0.0635, tolerans: 1.2, bulunan: false },
-            { id: 5,  x: -0.2782, y:  0.8708, z:  0.0973, tolerans: 1.2, bulunan: false },
-            { id: 6,  x: -0.3745, y:  0.8048, z: -0.0888, tolerans: 1.2, bulunan: false },
-            { id: 7,  x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 1.2, bulunan: false },
-            { id: 8,  x: -0.3746, y:  0.8009, z: -0.0924, tolerans: 1.2, bulunan: false },
-            { id: 9,  x:  0.3146, y:  0.1790, z: -0.0449, tolerans: 1.2, bulunan: false },
-            { id: 10, x:  0.3150, y:  0.1789, z: -0.0357, tolerans: 1.2, bulunan: false }
+            { id: 1, x: -0.374, y: 0.802, z: 0.079, tolerans: 1.2, bulunan: false }
         ];
 
         // Form Gönderimi
@@ -352,7 +353,7 @@
             setTimeout(() => { girisEkrani.style.visibility = 'hidden'; }, 500);
         });
 
-        // TIKLAMA VE KOORDİNAT ALGILAMA (Gelişmiş Debug Eklenmiş)
+        // TIKLAMA VE KOORDİNAT ALGILAMA
         viewer.addEventListener('click', async (event) => {
             if (!aktifKullanici) return;
 
@@ -398,7 +399,7 @@
                             hata.bulunan = true;
                             
                             const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-                            document.getElementById('progress-text').innerText = `${bulunanSayisi} / 10`;
+                            document.getElementById('progress-text').innerText = `${bulunanSayisi} / ${hataliBolgeler.length}`;
 
                             const bildirim = document.getElementById('bildirim');
                             bildirim.style.display = 'block';
@@ -434,7 +435,7 @@
             }
 
             const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-            aktifKullanici.puan = bulunanSayisi * 10;
+            aktifKullanici.puan = Math.round((bulunanSayisi / hataliBolgeler.length) * 100);
             aktifKullanici.durum = aktifKullanici.puan >= 70 ? 'BAŞARILI' : 'BAŞARISIZ';
 
             testKayıtlari.push(aktifKullanici);
