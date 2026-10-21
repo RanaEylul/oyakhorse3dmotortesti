@@ -190,12 +190,18 @@
             width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 6px;
         }
 
-        /* BİLDİRİM KUTUSU */
+        /* BİLDİRİM KUTUSU - ANINDA AÇILIR */
         #bildirim {
             display: none; position: fixed; top: 75px; left: 50%;
             transform: translateX(-50%); background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white; padding: 12px 28px; font-size: 16px; font-weight: 800;
             border-radius: 14px; z-index: 999; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: translateX(-50%) scale(0.7); opacity: 0; }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -220,7 +226,7 @@
         <div class="hero-card">
             <span class="badge">Kalite Kontrol Sınav Portalı</span>
             <h1>3D Motor Muayene Sınavı</h1>
-            <p>Sınava başlamak için bilgilerinizi doldurun. Her personel sadece 1 defa sınava girebilir. (Baraj: 70 Puan)</p>
+            <p>Sınava başlamak için bilgilerinizi doldurun. (Her Soru: 10 Puan, Baraj: 70 Puan)</p>
             
             <form id="kayit-form">
                 <div class="form-group">
@@ -300,29 +306,25 @@
         let aktifKullanici = null;
         let testKayıtlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
         let hotspotCounter = 0;
+        let bildirimTimer = null;
 
         const viewer = document.getElementById('engine-viewer');
 
-        viewer.addEventListener('error', (event) => {
-            console.error("Model yükleme hatası:", event);
-            alert("⚠️ motor11-v1.glb dosyası bulunamadı!");
-        });
-
-        // TAM 10 ADET ÖZEL ARIZA KOORDİNATI (Tolerans: 0.75, Her Biri: 10 Puan)
+        // 10 ADET NET ARIZA KOORDİNATI (Esnek Tolerans: 0.85)
         const hataliBolgeler = [
-            { id: 1,  X: -0.2723, Y: 0.8709, Z: 0.0844, tolerans: 0.15, bulunan: false },
-            { id: 2,  X: -0.3543, Y: 0.7353, Z: 0.3093, tolerans: 0.5, bulunan: false },
-            { id: 3,  X: 0.3136, Y: 0.3297, Z: -0.0387, tolerans: 0.5, bulunan: false },
-            { id: 4,  X: 0.3133, Y: 0.2397, Z: 0.0743, tolerans: 0.5, bulunan: false },
-            { id: 5,  X: 0.3174, Y: 0.2588, Z: -0.0978, tolerans: 0.5, bulunan: false },
-            { id: 6,  X: 0.3224, Y: 0.2359, Z: 0.0764, tolerans: 0.5, bulunan: false },
-            { id: 7,  X: -0.3738, Y: 0.7989, Z: -0.0885, tolerans: 0.5, bulunan: false },
-            { id: 8,  X: -0.3744, Y: 0.8004, Z: 0.0803, tolerans: 0.5, bulunan: false },
-            { id: 9,  X: -0.3496, Y: 0.7485, Z: 0.3127, tolerans: 0.5, bulunan: false },
-            { id: 10, x:  0.3150, y:  0.1789, z: -0.0357, tolerans: 0.5, bulunan: false }
+            { id: 1,  x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 0.85, bulunan: false },
+            { id: 2,  x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 0.85, bulunan: false },
+            { id: 3,  x:  0.3152, y:  0.1784, z: -0.0339, tolerans: 0.85, bulunan: false },
+            { id: 4,  x:  0.3132, y:  0.2436, z:  0.0635, tolerans: 0.85, bulunan: false },
+            { id: 5,  x: -0.2782, y:  0.8708, z:  0.0973, tolerans: 0.85, bulunan: false },
+            { id: 6,  x: -0.3745, y:  0.8048, z: -0.0888, tolerans: 0.85, bulunan: false },
+            { id: 7,  x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.85, bulunan: false },
+            { id: 8,  x: -0.3746, y:  0.8009, z: -0.0924, tolerans: 0.85, bulunan: false },
+            { id: 9,  x:  0.3146, y:  0.1790, z: -0.0449, tolerans: 0.85, bulunan: false },
+            { id: 10, x:  0.3150, y:  0.1789, z: -0.0357, tolerans: 0.85, bulunan: false }
         ];
 
-        // Form Gönderim & Sınavı Başlatma
+        // Form Gönderimi
         document.getElementById('kayit-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const sicilInput = document.getElementById('input-sicil').value.trim();
@@ -346,29 +348,29 @@
 
             const girisEkrani = document.getElementById('giris-ekrani');
             girisEkrani.style.opacity = '0';
-            setTimeout(() => {
-                girisEkrani.style.visibility = 'hidden';
-            }, 500);
+            setTimeout(() => { girisEkrani.style.visibility = 'hidden'; }, 500);
         });
 
-        // TIKLAMA VE KOORDİNAT ALGILAMA
-        viewer.addEventListener('click', async (event) => {
+        // HIZLANDIRILMIŞ VE ANLIK TIKLAMA ALGILAYICI
+        viewer.addEventListener('click', (event) => {
             if (!aktifKullanici) return;
 
             const rect = viewer.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
 
-            const hit = await viewer.positionAndNormalFromPoint(x, y);
-            
-            if (hit && hit.position) {
+            viewer.positionAndNormalFromPoint(x, y).then(hit => {
+                if (!hit || !hit.position) return;
+
                 const px = hit.position.x;
                 const py = hit.position.y;
                 const pz = hit.position.z;
 
+                // Ekranda canlı koordinatı yazdır
                 const coordText = `X: ${px.toFixed(4)}, Y: ${py.toFixed(4)}, Z: ${pz.toFixed(4)}`;
                 document.getElementById('coord-display').innerText = `📍 ${coordText}`;
 
+                // Nokta İşaretçisi Ekleme
                 hotspotCounter++;
                 const hotspotName = `click-marker-${hotspotCounter}`;
                 const hotspotEl = document.createElement('div');
@@ -376,6 +378,8 @@
                 hotspotEl.className = 'hotspot';
 
                 let isAriza = false;
+
+                // Mesafe Kontrolü
                 for (let hata of hataliBolgeler) {
                     const mesafe = Math.sqrt(
                         Math.pow(px - hata.x, 2) +
@@ -387,12 +391,16 @@
                         isAriza = true;
                         if (!hata.bulunan) {
                             hata.bulunan = true;
+                            
+                            // Sayacı anında güncelle
                             const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
                             document.getElementById('progress-text').innerText = `${bulunanSayisi} / 10`;
 
+                            // Mesajı ANINDA Göster
                             const bildirim = document.getElementById('bildirim');
                             bildirim.style.display = 'block';
-                            setTimeout(() => bildirim.style.display = 'none', 2000);
+                            if (bildirimTimer) clearTimeout(bildirimTimer);
+                            bildirimTimer = setTimeout(() => { bildirim.style.display = 'none'; }, 1800);
                         }
                         break;
                     }
@@ -408,7 +416,7 @@
                 }
                 
                 viewer.appendChild(hotspotEl);
-            }
+            });
         });
 
         // Sınavı Bitir
@@ -419,8 +427,8 @@
             }
 
             const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-            aktifKullanici.puan = bulunanSayisi * 10; // Her arıza 10 Puan
-            aktifKullanici.durum = aktifKullanici.puan >= 70 ? 'BAŞARILI' : 'BAŞARISIZ'; // Baraj: 70 Puan
+            aktifKullanici.puan = bulunanSayisi * 10;
+            aktifKullanici.durum = aktifKullanici.puan >= 70 ? 'BAŞARILI' : 'BAŞARISIZ';
 
             testKayıtlari.push(aktifKullanici);
             localStorage.setItem('engine_test_results', JSON.stringify(testKayıtlari));
@@ -463,7 +471,7 @@
             }
         });
 
-        // Sonuç Tablosu Çizimi
+        // Sonuç Tablosu
         function tabloyuCiz() {
             const tbody = document.getElementById('results-tbody');
             tbody.innerHTML = '';
@@ -474,7 +482,7 @@
             });
         }
 
-        // Excel İndirme
+        // Excel Export
         document.getElementById('excel-export-btn').addEventListener('click', () => {
             if (testKayıtlari.length === 0) return alert("Kayıt yok.");
             let csv = "\uFEFFSicil No;Ad;Soyad;Bölüm;Puan;Durum;Tarih\n";
