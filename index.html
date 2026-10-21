@@ -11,7 +11,7 @@
 <style>
 *{box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f1f5f9;color:#1e293b}
-model-viewer{width:100vw;height:100vh;position:absolute;inset:0;z-index:1;--poster-color:transparent;touch-action:pan-y}
+model-viewer{width:100vw;height:100vh;position:absolute;inset:0;z-index:1;--poster-color:transparent}
 .hotspot{background:#ef4444;border:2px solid white;border-radius:50%;width:16px;height:16px;box-shadow:0 0 10px #ef4444cc;pointer-events:none}
 .hotspot.found{background:#10b981;box-shadow:0 0 12px #10b981e6}
 #giris-ekrani{position:fixed;inset:0;background:linear-gradient(135deg,#f8fafc,#e2e8f0 50%,#cbd5e1);display:flex;justify-content:center;align-items:center;z-index:1000;transition:opacity .5s,visibility .5s;padding:20px}
@@ -32,7 +32,6 @@ model-viewer{width:100vw;height:100vh;position:absolute;inset:0;z-index:1;--post
 #admin-login-btn{position:fixed;top:16px;right:20px;z-index:20;background:#fffffff2;border:1px solid #cbd5e1cc;color:#475569;padding:8px 14px;border-radius:12px;cursor:pointer;font-size:12px;font-weight:700}
 #panel{position:fixed;top:70px;left:-420px;z-index:15;background:#fffffff5;backdrop-filter:blur(14px);padding:20px;border-radius:18px;border:1px solid #cbd5e1cc;box-shadow:0 20px 30px #94a3b84d;width:380px;max-height:calc(100vh - 100px);overflow-y:auto;color:#0f172a;transition:left .35s cubic-bezier(.4,0,.2,1)}
 #panel.open{left:16px}
-#panel h3{margin:0 0 12px;font-size:15px;color:#0284c7}
 table.results-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}
 table.results-table th,table.results-table td{padding:6px 8px;text-align:left;border-bottom:1px solid #e2e8f0}
 table.results-table th{background:#f1f5f9;color:#475569}
@@ -115,11 +114,7 @@ table.results-table th{background:#f1f5f9;color:#475569}
         <table class="results-table">
             <thead>
                 <tr>
-                    <th>Sicil</th>
-                    <th>Ad Soyad</th>
-                    <th>Bölüm</th>
-                    <th>Puan</th>
-                    <th>Durum</th>
+                    <th>Sicil</th><th>Ad Soyad</th><th>Bölüm</th><th>Puan</th><th>Durum</th>
                 </tr>
             </thead>
             <tbody id="results-tbody"></tbody>
@@ -148,8 +143,6 @@ table.results-table th{background:#f1f5f9;color:#475569}
 let aktifKullanici = null;
 let hotspotCounter = 0;
 let bildirimTimer = null;
-let touchStart = null;
-let isHandlingFaultTap = false;
 
 const TOPLAM_ARIZA = 10;
 const ARIZA_PUANI = 10;
@@ -166,6 +159,7 @@ try {
 
 const viewer = document.getElementById('engine-viewer');
 
+// Şimdilik 9 koordinat tanımlı.
 const hataliBolgeler = [
     { id: 1, x:  0.314, y: 0.268, z: -0.093, tolerans: 0.04, bulunan: false },
     { id: 2, x:  0.315, y: 0.175, z: -0.033, tolerans: 0.04, bulunan: false },
@@ -239,13 +233,20 @@ document.getElementById('kayit-form').addEventListener('submit', (e) => {
     }, 500);
 });
 
-// Dokunulan 3D yüzeyin arıza koordinatlarına yakınlığını kontrol et.
-async function handleFaultTap(hit) {
-    if (!aktifKullanici || !hit || !hit.position || isHandlingFaultTap) return;
+// Mobil ve masaüstü için ortak dokunma sistemi.
+let touchStart = null;
+let isHandlingFaultTap = false;
 
-    const px = hit.position.x;
-    const py = hit.position.y;
-    const pz = hit.position.z;
+// Sabit piksel alanı: yakınlaştırma seviyesinden bağımsız.
+const ARIZA_TIKLAMA_YARICAPI = 30;
+
+async function handleFaultTap(screenX, screenY) {
+    if (!aktifKullanici || isHandlingFaultTap) return;
+
+    if (typeof viewer.toScreenCoordinates !== 'function') {
+        console.error('Bu model-viewer sürümü toScreenCoordinates metodunu desteklemiyor.');
+        return;
+    }
 
     let enYakinAriza = null;
     let enKucukMesafe = Infinity;
@@ -253,14 +254,27 @@ async function handleFaultTap(hit) {
     for (const hata of hataliBolgeler) {
         if (hata.bulunan) continue;
 
-        const dx = px - hata.x;
-        const dy = py - hata.y;
-        const dz = pz - hata.z;
-        const mesafe = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        try {
+            const nokta = viewer.toScreenCoordinates({
+                x: hata.x,
+                y: hata.y,
+                z: hata.z
+            });
 
-        if (mesafe <= hata.tolerans && mesafe < enKucukMesafe) {
-            enYakinAriza = hata;
-            enKucukMesafe = mesafe;
+            if (!nokta ||
+                !Number.isFinite(nokta.x) ||
+                !Number.isFinite(nokta.y)) continue;
+
+            const dx = screenX - nokta.x;
+            const dy = screenY - nokta.y;
+            const mesafe = Math.sqrt(dx * dx + dy * dy);
+
+            if (mesafe <= ARIZA_TIKLAMA_YARICAPI && mesafe < enKucukMesafe) {
+                enYakinAriza = hata;
+                enKucukMesafe = mesafe;
+            }
+        } catch (error) {
+            console.warn('Arıza noktası ekrana yansıtılamadı:', error);
         }
     }
 
@@ -278,12 +292,8 @@ async function handleFaultTap(hit) {
         const hotspotEl = document.createElement('div');
         hotspotEl.slot = `click-marker-${hotspotCounter}`;
         hotspotEl.className = 'hotspot found';
-        hotspotEl.dataset.position = `${px} ${py} ${pz}`;
-
-        if (hit.normal) {
-            hotspotEl.dataset.normal =
-                `${hit.normal.x} ${hit.normal.y} ${hit.normal.z}`;
-        }
+        hotspotEl.dataset.position =
+            `${enYakinAriza.x} ${enYakinAriza.y} ${enYakinAriza.z}`;
 
         viewer.appendChild(hotspotEl);
 
@@ -296,10 +306,7 @@ async function handleFaultTap(hit) {
 
 function pointerBaslat(event) {
     if (!aktifKullanici) return;
-
-    if (event.pointerType === 'mouse' && event.button !== 0) {
-        return;
-    }
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
 
     touchStart = {
         x: event.clientX,
@@ -322,7 +329,7 @@ async function pointerBitir(event) {
     const dy = event.clientY - start.y;
     const hareket = Math.sqrt(dx * dx + dy * dy);
 
-    // Model döndürülürken oluşan hareketleri arıza tıklaması sayma.
+    // Modeli döndürme/sürükleme hareketlerini tıklama sayma.
     if (hareket > 12 || Date.now() - start.time > 1000) return;
     if (!aktifKullanici) return;
 
@@ -330,22 +337,9 @@ async function pointerBitir(event) {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    try {
-        if (typeof viewer.positionAndNormalFromPoint !== 'function') {
-            return;
-        }
-
-        const hit = await viewer.positionAndNormalFromPoint(x, y);
-
-        if (!hit || !hit.position) return;
-
-        await handleFaultTap(hit);
-    } catch (err) {
-        console.error('Arıza dokunma koordinatı hatası:', err);
-    }
+    await handleFaultTap(x, y);
 }
 
-// Android, iPhone ve masaüstü için Pointer Events
 viewer.addEventListener('pointerdown', pointerBaslat, { passive: true });
 viewer.addEventListener('pointerup', pointerBitir, { passive: true });
 
