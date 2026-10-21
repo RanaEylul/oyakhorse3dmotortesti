@@ -1,54 +1,132 @@
-function modelYukle(url, ikinciDeneme = false) {
-            document.getElementById('status').innerText = "Model yükleniyor...";
-            loader.load(url, (gltf) => {
-                scene.remove(loadedModel);
-                loadedModel = gltf.scene;
-
-                // 1. Model materyallerini kontrol et ve görünür yap
-                loadedModel.traverse((child) => {
-                    if (child.isMesh) {
-                        child.material.side = THREE.DoubleSide; // Çift taraflı kaplama
-                        child.material.frustumCulled = false;   // Kameradan kaçmasını engelle
-                    }
-                });
-
-                // 2. Modelin boyutunu ve merkezini hesapla
-                const box = new THREE.Box3().setFromObject(loadedModel);
-                const center = box.getCenter(new THREE.Vector3());
-                const size = box.getSize(new THREE.Vector3());
-
-                // Modeli orijine (0,0,0) taşı
-                loadedModel.position.x = -center.x;
-                loadedModel.position.y = -center.y;
-                loadedModel.position.z = -center.z;
-                scene.add(loadedModel);
-
-                // 3. Kamerayı modelin boyutuna göre dinamik hizala
-                const maxDim = Math.max(size.x, size.y, size.z);
-                const fov = camera.fov * (Math.PI / 180);
-                let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 2.5;
-
-                // Kamera çok yakın/uzak kalmasın diye sınır koy
-                cameraZ = Math.max(cameraZ, 2);
-
-                camera.position.set(0, maxDim * 0.3, cameraZ);
-                camera.lookAt(0, 0, 0);
-
-                camera.near = cameraZ / 100;
-                camera.far = cameraZ * 100;
-                camera.updateProjectionMatrix();
-
-                controls.target.set(0, 0, 0);
-                controls.update();
-
-                document.getElementById('status').innerText = "✅ Model başarıyla yüklendi!";
-            }, undefined, (error) => {
-                console.error("Yükleme hatası:", error);
-                if (!ikinciDeneme) {
-                    const tamUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1) + 'motor10.glb';
-                    modelYukle(tamUrl, true);
-                } else {
-                    document.getElementById('status').innerText = "❌ Model yükleme hatası! Dosya adı 'motor.glb' olmalı.";
-                }
-            });
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sadece 3D GLB Model Testi</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #f1f5f9; }
+        #durum {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #0f172a; color: white; padding: 12px 24px; border-radius: 30px;
+            font-family: sans-serif; font-size: 14px; font-weight: bold; z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
+    </style>
+    <!-- Three.js Kütüphaneleri -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+
+    <div id="durum">🔄 Model aranıyor ve yükleniyor...</div>
+
+    <script>
+        // 1. SAHNE, KAMERA VE RENDERER KURULUMU
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf1f5f9);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 10000);
+        camera.position.set(0, 0, 5);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. IŞIKLANDIRMA
+        scene.add(new THREE.DirectionalLight(0xffffff, 2.5));
+        scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+
+        // 3. FARE KONTROLLERİ (OrbitControls)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // 4. GLB MODEL YÜKLEME MANTIĞI
+        const loader = new THREE.GLTFLoader();
+        let yuklenenModel = null;
+
+        function glbYukle(dosyaYolu, ikinciDeneme = false) {
+            const durumText = document.getElementById('durum');
+            durumText.innerText = `🔄 Yükleniyor: ${dosyaYolu}`;
+
+            loader.load(
+                dosyaYolu,
+                // Yükleme Başarılı Olduğunda:
+                (gltf) => {
+                    if (yuklenenModel) scene.remove(yuklenenModel);
+                    yuklenenModel = gltf.scene;
+
+                    // Materyal ve Yüzey Kontrolü
+                    yuklenenModel.traverse((child) => {
+                        if (child.isMesh) {
+                            child.material.side = THREE.DoubleSide;
+                            child.material.frustumCulled = false;
+                        }
+                    });
+
+                    // Modeli Tam Merkeze (0,0,0) Oturtma
+                    const box = new THREE.Box3().setFromObject(yuklenenModel);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+
+                    yuklenenModel.position.x = -center.x;
+                    yuklenenModel.position.y = -center.y;
+                    yuklenenModel.position.z = -center.z;
+                    scene.add(yuklenenModel);
+
+                    // Kamerayı Model Boyutuna Göre Otomatik Uzaklaştırma
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 2.2;
+                    cameraZ = Math.max(cameraZ, 2);
+
+                    camera.position.set(0, maxDim * 0.3, cameraZ);
+                    camera.lookAt(0, 0, 0);
+
+                    camera.near = cameraZ / 100;
+                    camera.far = cameraZ * 100;
+                    camera.updateProjectionMatrix();
+
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+
+                    durumText.style.background = "#10b981";
+                    durumText.innerText = "✅ Model Başarıyla Yüklendi!";
+                },
+                undefined,
+                // Yükleme Hatası Olduğunda:
+                (error) => {
+                    console.error("Yükleme Hatası:", error);
+                    if (!ikinciDeneme) {
+                        // Eğer göreli yol (./motor10.glb) bulamazsa tam adresi dener
+                        const tamUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1) + 'motor10.glb';
+                        glbYukle(tamUrl, true);
+                    } else {
+                        durumText.style.background = "#ef4444";
+                        durumText.innerText = "❌ Dosya Yüklenemedi! 'motor.glb' bulunamadı.";
+                    }
+                }
+            );
+        }
+
+        // Testi Başlat
+        glbYukle('./motor10.glb');
+
+        // ANIMASYON DÖNGÜSÜ
+        (function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        })();
+
+        // EKRAN BOYUTU DEĞİŞTİĞİNDE YENİDEN HİZALAMA
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
