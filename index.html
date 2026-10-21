@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+           <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -23,31 +23,31 @@
             --poster-color: transparent;
         }
 
-        /* GİRİŞ & KAYIT EKRANI (AÇILIR-KAPANIR MODAL HALE GETİRİLDİ) */
+        /* GİRİŞ & KAYIT EKRANI (İLK AÇILAN EKRAN) */
         #giris-ekrani {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
             display: flex; justify-content: center; align-items: center;
-            z-index: 1000; transition: opacity 0.4s ease, visibility 0.4s; padding: 20px;
+            z-index: 1000; transition: opacity 0.5s ease, visibility 0.5s; padding: 20px;
         }
 
         .hero-card {
-            background: rgba(255, 255, 255, 0.98);
-            padding: 32px 36px; border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.9);
-            max-width: 460px; width: 100%; text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px); padding: 36px 40px; border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(148, 163, 184, 0.35); border: 1px solid rgba(255, 255, 255, 0.9);
+            max-width: 500px; width: 100%; text-align: center;
         }
 
         .badge {
-            background: #e0f2fe; color: #0284c7; font-size: 11px; font-weight: 700;
+            background: #e0f2fe; color: #0284c7; font-size: 12px; font-weight: 700;
             padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px;
             display: inline-block; margin-bottom: 12px;
         }
 
-        .hero-card h1 { font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px 0; }
-        .hero-card p { font-size: 13px; color: #64748b; margin-bottom: 18px; }
+        .hero-card h1 { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 10px 0; }
+        .hero-card p { font-size: 13px; color: #64748b; margin-bottom: 20px; }
 
-        .form-group { text-align: left; margin-bottom: 12px; }
+        .form-group { text-align: left; margin-bottom: 14px; }
         .form-group label { display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px; }
         .form-group input {
             width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid #cbd5e1;
@@ -57,8 +57,8 @@
 
         #basla-btn {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white; border: none; padding: 12px 28px; font-size: 15px; font-weight: 700;
-            border-radius: 12px; cursor: pointer; width: 100%; margin-top: 8px;
+            color: white; border: none; padding: 14px 32px; font-size: 16px; font-weight: 700;
+            border-radius: 12px; cursor: pointer; width: 100%; margin-top: 10px;
             box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3); transition: all 0.2s;
         }
         #basla-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 25px rgba(37, 99, 235, 0.4); }
@@ -68,7 +68,7 @@
         /* ARAYÜZ ÜST & ALT PANELLERİ */
         #top-header {
             position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
-            z-index: 10; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px);
+            z-index: 10; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px);
             padding: 8px 24px; border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.9);
             box-shadow: 0 8px 20px rgba(148, 163, 184, 0.2); font-size: 14px; font-weight: 700; color: #0f172a;
             text-align: center; max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -90,18 +90,15 @@
         }
         #bitir-btn:hover { transform: translateY(-1px); }
 
-        /* SAĞ ÜST YÖNETİCİ & SINAV BAŞLAT BUTONLARI */
-        .top-right-btns {
-            position: fixed; top: 16px; right: 20px; z-index: 20; display: flex; gap: 8px;
-        }
-
-        .action-header-btn {
+        /* SAĞ ÜST YÖNETİCİ GİRİŞİ */
+        #admin-login-btn {
+            position: fixed; top: 16px; right: 20px; z-index: 20;
             background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(203, 213, 225, 0.8);
             color: #475569; padding: 8px 14px; border-radius: 12px; cursor: pointer;
             font-size: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
             transition: all 0.2s;
         }
-        .action-header-btn:hover { background: #f8fafc; color: #0f172a; }
+        #admin-login-btn:hover { background: #f8fafc; color: #0f172a; }
 
         /* YÖNETİCİ PANELİ (SOL) */
         #panel {
@@ -166,15 +163,6 @@
             color: white; padding: 12px 28px; font-size: 16px; font-weight: 800;
             border-radius: 14px; z-index: 999; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
         }
-
-        @media (max-width: 600px) {
-            .hero-card { padding: 24px 20px; margin: 10px; }
-            #top-header { font-size: 12px; padding: 6px 14px; top: 12px; }
-            .top-right-btns { top: 12px; right: 12px; }
-            .action-header-btn { padding: 6px 10px; font-size: 11px; }
-            #bottom-status-bar { bottom: 12px; padding: 8px 16px; font-size: 12px; gap: 10px; width: 90%; justify-content: space-between; }
-            #panel { width: calc(100vw - 32px); top: 60px; max-height: calc(100vh - 80px); }
-        }
     </style>
 </head>
 <body>
@@ -221,13 +209,10 @@
     </div>
 
     <!-- ÜST BAŞLIK -->
-    <div id="top-header">🔍 3D Motor Kalite Kontrol Portalı</div>
+    <div id="top-header">🔍 3D Motor Kalite Kontrol Sınavı</div>
 
-    <!-- SAĞ ÜST BUTONLAR -->
-    <div class="top-right-btns">
-        <button class="action-header-btn" id="sinav-modal-btn">📝 Sınav Girişi</button>
-        <button class="action-header-btn" id="admin-login-btn">🔒 Yönetici Girişi</button>
-    </div>
+    <!-- SAĞ ÜST YÖNETİCİ GİRİŞ BUTONU -->
+    <button id="admin-login-btn">🔒 Yönetici Girişi</button>
 
     <!-- ALT BİLGİ & SINAVI BİTİR BUTONU -->
     <div id="bottom-status-bar">
@@ -279,18 +264,7 @@
         let testKayıtlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
         let bulunanArizaSayisi = 0;
 
-        // Sayfa açıldığında giriş modalını gizli tutup direkt modeli gösteriyoruz
-        document.getElementById('giris-ekrani').style.display = 'none';
-
-        // Sınav Giriş Butonu
-        document.getElementById('sinav-modal-btn').addEventListener('click', () => {
-            const girisEkrani = document.getElementById('giris-ekrani');
-            girisEkrani.style.display = 'flex';
-            girisEkrani.style.opacity = '1';
-            girisEkrani.style.visibility = 'visible';
-        });
-
-        // Form Gönderim & Sınav Başlatma
+        // Form Gönderim & Sınavı Başlatma
         document.getElementById('kayit-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const sicilInput = document.getElementById('input-sicil').value.trim();
@@ -315,18 +289,15 @@
             const girisEkrani = document.getElementById('giris-ekrani');
             girisEkrani.style.opacity = '0';
             setTimeout(() => {
-                girisEkrani.style.display = 'none';
-            }, 400);
-
-            alert(`Sınavınız Başladı Sayın ${aktifKullanici.ad} ${aktifKullanici.soyad}.\nModel üzerindeki arızaları tespit etmek için tıklayabilirsiniz.`);
+                girisEkrani.style.visibility = 'hidden';
+            }, 500);
         });
 
-        // 3D Model Tıklama ve Arıza Tespiti
+        // 3D Model Üzerinde Tıklama ile Arıza Tespiti
         const viewer = document.getElementById('engine-viewer');
-        viewer.addEventListener('click', (event) => {
+        viewer.addEventListener('click', () => {
             if (!aktifKullanici) return;
 
-            // Model üzerinde tıklama yapıldığında arıza puanı verilir
             if (bulunanArizaSayisi < 10) {
                 bulunanArizaSayisi++;
                 document.getElementById('progress-text').innerText = `${bulunanArizaSayisi} / 10`;
@@ -340,7 +311,7 @@
         // Sınavı Bitir
         document.getElementById('bitir-btn').addEventListener('click', () => {
             if (!aktifKullanici) {
-                alert("Önce 'Sınav Girişi' butonuna basarak kayıt olmalısınız!");
+                alert("Lütfen önce bilgilerinizi girip sınavı başlatın!");
                 return;
             }
 
