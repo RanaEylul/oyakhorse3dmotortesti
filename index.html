@@ -280,16 +280,16 @@
         let testKayıtlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
         let hotspotCounter = 0;
 
-        // 8 GÖNDERDİĞİNİZ ARIZA KOORDİNATI (İstediğiniz bölgenin toleransı genişletildi)
+        // TÜM ARIZA NOKTALARI İÇİN GENİŞLETİLMİŞ TOLERANS (0.75)
         const hataliBolgeler = [
-            { x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 0.45, bulunan: false },
-            { x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 0.45, bulunan: false },
-            { x:  0.3152, y:  0.1784, z: -0.0339, tolerans: 0.45, bulunan: false },
-            { x:  0.3132, y:  0.2436, z:  0.0635, tolerans: 0.45, bulunan: false },
-            { x: -0.2782, y:  0.8708, z:  0.0973, tolerans: 0.75, bulunan: false }, // Genişletilmiş tolerans
-            { x: -0.3745, y:  0.8048, z: -0.0888, tolerans: 0.45, bulunan: false },
-            { x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.45, bulunan: false },
-            { x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.45, bulunan: false }
+            { x:  0.3138, y:  0.3352, z: -0.0404, tolerans: 0.75, bulunan: false },
+            { x:  0.3131, y:  0.2694, z: -0.1043, tolerans: 0.75, bulunan: false },
+            { x:  0.3152, y:  0.1784, z: -0.0339, tolerans: 0.75, bulunan: false },
+            { x:  0.3132, y:  0.2436, z:  0.0635, tolerans: 0.75, bulunan: false },
+            { x: -0.2782, y:  0.8708, z:  0.0973, tolerans: 0.75, bulunan: false },
+            { x: -0.3745, y:  0.8048, z: -0.0888, tolerans: 0.75, bulunan: false },
+            { x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.75, bulunan: false },
+            { x: -0.3737, y:  0.7972, z:  0.0817, tolerans: 0.75, bulunan: false }
         ];
 
         // Form Gönderim & Sınavı Başlatma
@@ -388,7 +388,7 @@
             }
 
             const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-            aktifKullanici.puan = bulunanSayisi * 12.5; // 8 arıza olduğu için her biri 12.5 puandır (Toplam 100)
+            aktifKullanici.puan = bulunanSayisi * 12.5; 
             aktifKullanici.durum = aktifKullanici.puan >= 70 ? 'BAŞARILI' : 'BAŞARISIZ';
 
             testKayıtlari.push(aktifKullanici);
