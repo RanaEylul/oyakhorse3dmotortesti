@@ -23,7 +23,41 @@
             --poster-color: transparent;
         }
 
-        /* GİRİŞ & KAYIT EKRANI (İLK AÇILAN EKRAN) */
+        /* EKRANDA CANLI KOORDİNAT GÖSTERİCİ (SAĞ ÜST KÖŞE) */
+        #coord-display {
+            position: fixed;
+            top: 65px;
+            right: 20px;
+            z-index: 9999;
+            background: rgba(15, 23, 42, 0.95);
+            color: #38bdf8;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 2px solid #0284c7;
+            user-select: all; /* Tek tıkla hepsini seçip kopyalamanı sağlar */
+        }
+
+        /* TIKLANAN NOKTA İŞARETÇİLERİ */
+        .hotspot {
+            background: #ef4444;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+            pointer-events: none;
+        }
+
+        .hotspot.found {
+            background: #10b981;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.9);
+        }
+
+        /* GİRİŞ & KAYIT EKRANI */
         #giris-ekrani {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
@@ -167,7 +201,10 @@
 </head>
 <body>
 
-    <!-- DOĞRUDAN YÜKLENEN 3D MOTOR MODELİ (disable-pan eklendi) -->
+    <!-- EKRANDA CANLI KOORDİNAT KUTUSU -->
+    <div id="coord-display">📍 Tıklanan: Tıklama bekleniyor...</div>
+
+    <!-- DOĞRUDAN YÜKLENEN 3D MOTOR MODELİ -->
     <model-viewer 
         id="engine-viewer"
         src="motor11-v1.glb" 
@@ -262,8 +299,9 @@
     <script>
         let aktifKullanici = null;
         let testKayıtlari = JSON.parse(localStorage.getItem('engine_test_results') || '[]');
+        let hotspotCounter = 0;
 
-        // GENİŞLETİLMİŞ TIKLAMA SINIRI (tolerans: 0.45)
+        // 10 ARIZA KOORDİNATI
         const hataliBolgeler = [
             { x: -0.3720, y:  0.3133, z: -0.0922, tolerans: 0.45, bulunan: false },
             { x: -0.3643, y:  0.3078, z:  0.0674, tolerans: 0.45, bulunan: false },
@@ -306,38 +344,72 @@
             }, 500);
         });
 
-        // KOORDİNAT BAZLI TIKLAMA KONTROLÜ
+        // TIKLAMA BİLGİSİNİ KESİN OLARAK YAZDIRMA (KONSOL + SAĞ ÜST EKRAN KUTUSU)
         const viewer = document.getElementById('engine-viewer');
-        viewer.addEventListener('click', (event) => {
-            if (!aktifKullanici) return;
+        viewer.addEventListener('click', async (event) => {
+            const rect = viewer.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
 
-            const hit = viewer.positionAndNormalFromPoint(event.clientX, event.clientY);
+            const hit = await viewer.positionAndNormalFromPoint(x, y);
             
             if (hit && hit.position) {
                 const px = hit.position.x;
                 const py = hit.position.y;
                 const pz = hit.position.z;
 
-                for (let hata of hataliBolgeler) {
-                    const mesafe = Math.sqrt(
-                        Math.pow(px - hata.x, 2) +
-                        Math.pow(py - hata.y, 2) +
-                        Math.pow(pz - hata.z, 2)
-                    );
+                const coordText = `X: ${px.toFixed(4)}, Y: ${py.toFixed(4)}, Z: ${pz.toFixed(4)}`;
 
-                    if (mesafe <= hata.tolerans) {
-                        if (!hata.bulunan) {
-                            hata.bulunan = true;
-                            const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
-                            document.getElementById('progress-text').innerText = `${bulunanSayisi} / 10`;
+                // 1. EKRANDAKİ SİYAH/MAVİ KUTUYA YAZDIR
+                document.getElementById('coord-display').innerText = `📍 ${coordText}`;
 
-                            const bildirim = document.getElementById('bildirim');
-                            bildirim.style.display = 'block';
-                            setTimeout(() => bildirim.style.display = 'none', 2000);
+                // 2. KONSOLA BÜYÜK VE NET YAZDIR
+                console.clear();
+                console.log(`%c📍 TIKLANAN KOORDİNAT:\n${coordText}`, 'background: #0284c7; color: white; font-size: 16px; font-weight: bold; padding: 8px 12px; border-radius: 6px;');
+
+                // 3. MODEL ÜZERİNE İŞARETÇİ NOKTA EKLER
+                hotspotCounter++;
+                const hotspotName = `click-marker-${hotspotCounter}`;
+                
+                const hotspotEl = document.createElement('div');
+                hotspotEl.slot = hotspotName;
+                hotspotEl.className = 'hotspot';
+
+                let isAriza = false;
+                if (aktifKullanici) {
+                    for (let hata of hataliBolgeler) {
+                        const mesafe = Math.sqrt(
+                            Math.pow(px - hata.x, 2) +
+                            Math.pow(py - hata.y, 2) +
+                            Math.pow(pz - hata.z, 2)
+                        );
+
+                        if (mesafe <= hata.tolerans) {
+                            isAriza = true;
+                            if (!hata.bulunan) {
+                                hata.bulunan = true;
+                                const bulunanSayisi = hataliBolgeler.filter(h => h.bulunan).length;
+                                document.getElementById('progress-text').innerText = `${bulunanSayisi} / 10`;
+
+                                const bildirim = document.getElementById('bildirim');
+                                bildirim.style.display = 'block';
+                                setTimeout(() => bildirim.style.display = 'none', 2000);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
+
+                if (isAriza) {
+                    hotspotEl.classList.add('found');
+                }
+
+                hotspotEl.dataset.position = `${px} ${py} ${pz}`;
+                if (hit.normal) {
+                    hotspotEl.dataset.normal = `${hit.normal.x} ${hit.normal.y} ${hit.normal.z}`;
+                }
+                
+                viewer.appendChild(hotspotEl);
             }
         });
 
