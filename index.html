@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>3D Motor Kalite Kontrol & Sınav Portalı</title>
 
 <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@latest/dist/model-viewer.min.js"></script>
@@ -160,8 +160,6 @@ try {
 
 const viewer = document.getElementById('engine-viewer');
 
-// Şimdilik 9 koordinat tanımlı.
-// 10. koordinatı daha sonra bu listenin sonuna ekleyebilirsin.
 const hataliBolgeler = [
     { id: 1, x:  0.314, y: 0.268, z: -0.093, tolerans: 0.04, bulunan: false },
     { id: 2, x:  0.315, y: 0.175, z: -0.033, tolerans: 0.04, bulunan: false },
@@ -172,8 +170,6 @@ const hataliBolgeler = [
     { id: 7, x: -0.352, y: 0.738, z:  0.312, tolerans: 0.04, bulunan: false },
     { id: 8, x: -0.375, y: 0.801, z: -0.094, tolerans: 0.04, bulunan: false },
     { id: 9, x: -0.373, y: 0.794, z:  0.074, tolerans: 0.04, bulunan: false }
-
-    // 10. koordinatı daha sonra buraya ekle.
 ];
 
 function ilerlemeyiGuncelle() {
@@ -194,7 +190,6 @@ function bildirimGoster(metin) {
     }, 1800);
 }
 
-// Katılımcı kayıt formu
 document.getElementById('kayit-form').addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -237,7 +232,6 @@ document.getElementById('kayit-form').addEventListener('submit', (e) => {
     }, 500);
 });
 
-// Geliştirilmiş dokunma ve tıklama yönetimi (pointerdown & pointerup)
 viewer.addEventListener('pointerdown', (event) => {
     if (event.pointerType === 'mouse' && event.button !== 0) {
         return;
@@ -262,17 +256,14 @@ viewer.addEventListener('pointerup', async (event) => {
     const start = touchStart;
     touchStart = null;
 
-    // Parmağın veya farenin hareketini kontrol et.
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
     const hareket = Math.sqrt(dx * dx + dy * dy);
 
-    // Model döndürülmüşse dokunmayı arıza tıklaması sayma.
     if (hareket > 12 || Date.now() - start.time > 1000) {
         return;
     }
 
-    // Ekran koordinatlarını model-viewer koordinatlarına çevir.
     const rect = viewer.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
@@ -280,7 +271,6 @@ viewer.addEventListener('pointerup', async (event) => {
     try {
         if (typeof viewer.positionAndNormalFromPoint !== 'function') return;
 
-        // Dokunulan noktada 3D modelin yüzeyini bul.
         const hit = await viewer.positionAndNormalFromPoint(x, y);
         if (!hit || !hit.position) return;
 
@@ -331,7 +321,6 @@ viewer.addEventListener('pointerup', async (event) => {
     }
 });
 
-// Sınavı bitir ve sonucu kaydet
 document.getElementById('bitir-btn').addEventListener('click', () => {
     if (!aktifKullanici) {
         alert('Lütfen önce bilgilerinizi girip sınavı başlatın!');
@@ -364,7 +353,6 @@ document.getElementById('bitir-btn').addEventListener('click', () => {
     location.reload();
 });
 
-// Yönetici girişi
 document.getElementById('admin-login-btn').addEventListener('click', () => {
     if (prompt('Yönetici şifresini giriniz:') === 'admin2026') {
         document.getElementById('panel').classList.toggle('open');
@@ -373,7 +361,6 @@ document.getElementById('admin-login-btn').addEventListener('click', () => {
     }
 });
 
-// Karekod oluştur
 document.getElementById('qr-generate-btn').addEventListener('click', () => {
     if (typeof QRCode === 'undefined') {
         alert('Karekod kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.');
@@ -406,7 +393,6 @@ document.getElementById('qr-modal').addEventListener('click', (event) => {
     }
 });
 
-// Karekod PNG indir
 document.getElementById('qr-download-btn').addEventListener('click', () => {
     const container = document.getElementById('qrcode-container');
     const qrImg = container.querySelector('img');
@@ -426,7 +412,6 @@ document.getElementById('qr-download-btn').addEventListener('click', () => {
     link.click();
 });
 
-// Yönetici sonuç tablosu
 function tabloyuCiz() {
     const tbody = document.getElementById('results-tbody');
     tbody.innerHTML = '';
@@ -458,7 +443,6 @@ function tabloyuCiz() {
     });
 }
 
-// Sonuçları CSV olarak indir
 document.getElementById('excel-export-btn').addEventListener('click', () => {
     if (testKayitlari.length === 0) {
         alert('Kayıt yok.');
