@@ -59,7 +59,7 @@ table.results-table th{background:#f1f5f9;color:#475569}
 
 <body>
 
-<!-- Kamera ve Ölçek Sabitleme Parametreleri Eklendi -->
+<!-- Kamera mesafesi 80% yapılarak model büyütüldü -->
 <model-viewer
     id="engine-viewer"
     src="motor11-v1.glb"
@@ -67,7 +67,7 @@ table.results-table th{background:#f1f5f9;color:#475569}
     camera-controls
     disable-pan
     shadow-intensity="1.5"
-    camera-orbit="0deg 75deg 105%"
+    camera-orbit="0deg 75deg 80%"
     min-camera-orbit="auto auto 5%"
     max-camera-orbit="auto auto 300%"
     ar>
@@ -77,7 +77,7 @@ table.results-table th{background:#f1f5f9;color:#475569}
     <div class="hero-card">
         <span class="badge">Kalite Kontrol Sınav Portalı</span>
         <h1>3D Motor Muayene Sınavı</h1>
-        <p>Sınava ranae başlamak için bilgilerinizi doldurun. Her arıza 10 puan, başarı barajı 70 puan.</p>
+        <p>Sınava eylul başlamak için bilgilerinizi doldurun. Her arıza 10 puan, başarı barajı 70 puan.</p>
 
         <form id="kayit-form">
             <div class="form-group">
@@ -478,7 +478,6 @@ document.getElementById('excel-export-btn').addEventListener('click', () => {
 viewer.addEventListener('load', () => {
     document.getElementById('status').textContent =
         '✅ motor11-v1.glb başarıyla yüklendi';
-    // Model yüklendiğinde kamerayı ve ölçeği kusursuz konuma oturt
     viewer.jumpCameraToGoal();
 });
 
