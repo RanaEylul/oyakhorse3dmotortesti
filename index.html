@@ -59,6 +59,7 @@ table.results-table th{background:#f1f5f9;color:#475569}
 
 <body>
 
+<!-- Kamera ve Ölçek Sabitleme Parametreleri Eklendi -->
 <model-viewer
     id="engine-viewer"
     src="motor11-v1.glb"
@@ -66,6 +67,9 @@ table.results-table th{background:#f1f5f9;color:#475569}
     camera-controls
     disable-pan
     shadow-intensity="1.5"
+    camera-orbit="0deg 75deg 105%"
+    min-camera-orbit="auto auto 5%"
+    max-camera-orbit="auto auto 300%"
     ar>
 </model-viewer>
 
@@ -474,6 +478,8 @@ document.getElementById('excel-export-btn').addEventListener('click', () => {
 viewer.addEventListener('load', () => {
     document.getElementById('status').textContent =
         '✅ motor11-v1.glb başarıyla yüklendi';
+    // Model yüklendiğinde kamerayı ve ölçeği kusursuz konuma oturt
+    viewer.jumpCameraToGoal();
 });
 
 viewer.addEventListener('error', () => {
